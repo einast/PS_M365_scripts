@@ -13,7 +13,7 @@
  
 .NOTES
   Version:        1.0
-  Author:         Einar Asting (einar.asting@crayon.com)
+  Author:         Einar Asting (einar@asting.net)
   Creation Date:  Oct 2nd 2019
   Purpose/Change: Initial version
 .LINK

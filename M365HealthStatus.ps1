@@ -15,7 +15,7 @@
   3. Replace the variables with your own
   4. Create an Azure app and generate application ID and key
   5. Run as required (e.g scheduled task)
-  
+
   The output will be color coded (can be adapted as required) according to Status of the classification - Red = Incident, Yellow = Advisory
 
   Disclaimer: This script is offered "as-is" with no warranty. 
@@ -24,7 +24,7 @@
  
 .NOTES
   Version:        1.0
-  Author:         Einar Asting (einar.asting@crayon.com)
+  Author:         Einar Asting (einar@asting.net)
   Creation Date:  Oct 2nd 2019
   Purpose/Change: Initial version
 .LINK
