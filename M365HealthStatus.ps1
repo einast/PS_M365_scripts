@@ -2,65 +2,71 @@
 .SYNOPSIS
   Get Microsoft 365 Service health status and post to Teams using webhooks
 .DESCRIPTION
-  Script to check Microsoft 365 Health status, configured to check last 24 hours (can be adapted as required). Run as a scheduled task.
+  Script to check Microsoft 365 Health status, configured to check last 15 minutes (can be adapted as required). Run as a scheduled task, Azure automation etc.
+
+  Create a webhook in Teams and copy the URI to the variable section below.
+
+  The output will be color coded (can be adapted as required) according to Classification of the entry:
   
-  Credits: 
-  https://evotec.xyz/preparing-azure-app-registrations-permissions-for-office-365-health-service/
-  https://evotec.xyz/powershell-way-to-get-all-information-about-office-365-service-health
-  Module used:
-  https://github.com/EvotecIT/PSWinDocumentation.O365HealthService
+  Red = Incident
+  Yellow = Advisory
+  Green = Resolved (Messages with a value in "End date")
 
-  1. Install module
-  2. Create a webhook in Teams and copy the URI to the variable section below.
-  3. Replace the variables with your own
-  4. Create an Azure app and generate application ID and key
-  5. Run as required (e.g scheduled task)
-
-  The output will be color coded (can be adapted as required) according to Status of the classification - Red = Incident, Yellow = Advisory
+  Replace the variables with your own where feasible
+  
+  Pre-req: As admin:
+  Install-Module PSWinDocumentation.O365HealthService
 
   Disclaimer: This script is offered "as-is" with no warranty. 
   While the script is tested and working in my environment, it is recommended that you test the script
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        1.0
-  Author:         Einar Asting (einar@asting.net)
+  Version:        1.1
+  Author:         Einar Asting (einar.asting@crayon.com)
   Creation Date:  Oct 2nd 2019
-  Purpose/Change: Initial version
+  Purpose/Change: Modified version
 .LINK
-  https://github.com/einast/PS_M365_scripts
+  https://github.com/repository
 #>
 
 Import-Module PSWinDocumentation.O365HealthService -Force
 
 # Variables
-    $ApplicationID = 'app id'
-    $ApplicationKey = 'app key'
-    $TenantDomain = 'tenant domain (NOT .onmicrosoft.com)' # Alternatively DirectoryID if tenant domain fails
-    $URI = 'uri to Teams webhook'
+    $ApplicationID = 'application ID'
+    $ApplicationKey = 'application key'
+    $TenantDomain = 'your FQDN' # Alternatively use DirectoryID if tenant domain fails
+    $URI = 'Teams webhook URI'
     $Now = Get-Date
-    $Hours = '24'
+    $Minutes = '15'
 
 # Poll for data
 $O365 = Get-Office365Health -ApplicationID $ApplicationID -ApplicationKey $ApplicationKey -TenantDomain $TenantDomain -ErrorAction Stop
 
-# Parse data
-  ForEach ($inc in $O365.IncidentsExtended){
-               #Set the color line of the card according to the Status of the incident
-                if ($inc.Classification -eq "Incident")
+# Poll and parse data
+  ForEach ($inc in $O365.Incidents){
+                    
+                    #Set the color line of the card according to the Classification of the event, or if it has ended
+                    if ($inc.Classification -eq "Incident")
                     {
-                    $color = "ff0000"
+                    $color = "ff0000" # Red
                     }
                     else
                         {
-                        $color = "ffff00"
-                                        }
+                        if ($inc.EndTime -ne $null)
+                            {
+                            $color = "00cc00" # Green
+                            }
+                            else
+                                {
+                                $color = "ffff00" # Yellow
+                                }
+                            }
                                  
-    If (($Now - [datetime]$inc.LastUpdatedTime).TotalHours -le $Hours) {
+    If (($Now - [datetime]$inc.LastUpdatedTime).TotalMinutes -le $Minutes) {
                
                 $Payload = ConvertTo-Json -Depth 4 @{
-                #title = 'Microsoft 365 Service Status'
-                text = 'Service status updates past ' +  $($Hours) + ' hours - INC ID: ' + $($inc.ID)
+                text = 'Service status updates past ' +  $($Minutes) + ' minutes - INC ID: ' + $($inc.ID)
                 themeColor = $color
                 sections = @(
                             @{
@@ -80,20 +86,22 @@ $O365 = Get-Office365Health -ApplicationID $ApplicationID -ApplicationKey $Appli
                             },
                             @{
                             name = 'Description'
-                            value = $inc.Message
+                            value = $inc.ImpactDescription
                             },
                             @{
-                            name = 'Last updated'
+                            name = 'Last Updated'
                             value = $inc.LastUpdatedTime
-                            }
-                           
+                            },
+                            @{
+                            name = 'Incident End Time'
+                            value = $inc.EndTime
+                            }                           
                         )
                     }
                 )
             }
-            #Convert to UTF8
+            #Convert to UTF8 and post any new events to Teams
             $Payload = ([System.Text.Encoding]::UTF8.GetBytes($Payload))
             Invoke-Webrequest -URI $URI -Method POST -Body $Payload
-        }
+            }
        }
-     
