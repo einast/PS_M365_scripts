@@ -14,6 +14,11 @@
 
   Replace the variables with your own where feasible
   
+  Credits to Evotec for the module used (also take a look at the documentation in the links below):
+  https://github.com/EvotecIT/PSWinDocumentation.O365HealthService
+  https://evotec.xyz/preparing-azure-app-registrations-permissions-for-office-365-health-service/
+  https://evotec.xyz/powershell-way-to-get-all-information-about-office-365-service-health
+
   Pre-req: As admin:
   Install-Module PSWinDocumentation.O365HealthService
 
