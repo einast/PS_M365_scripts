@@ -23,11 +23,11 @@
  
 .NOTES
   Version:        1.1
-  Author:         Einar Asting (einar.asting@crayon.com)
+  Author:         Einar Asting (einar@asting.net)
   Creation Date:  Oct 2nd 2019
   Purpose/Change: Modified version
 .LINK
-  https://github.com/repository
+  https://github.com/einast/PS_M365_scripts
 #>
 
 Import-Module PSWinDocumentation.O365HealthService -Force
