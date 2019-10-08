@@ -1,7 +1,5 @@
 # Microsoft 365 Powershell scripts
 
-This repository contains "nice to have" scripts I regularly use
-
 - Scripts for posting to Teams via webhooks (initial versions for PoC)
 
   | Script                                                       | Description                                                  |
@@ -10,7 +8,7 @@ This repository contains "nice to have" scripts I regularly use
   | [M365 Message Center updates](https://github.com/einast/PS_M365_scripts/blob/master/M365MessageCenterUpdates.ps1) | Display relevant messages for your tenant from Message Center |
   | [M365 Roadmap updates](https://github.com/einast/PS_M365_scripts/blob/master/M365RoadmapUpdates.ps1) | Parse roadmap data using RSS feed                            |
 
-- Screenshots
+- Screenshots (hours and minutes are different than in the scripts for testing purposes)
 
 ![Screenshot](https://github.com/einast/PS_M365_scripts/blob/master/O365ServiceHealth.PNG)
 
