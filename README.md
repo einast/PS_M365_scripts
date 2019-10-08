@@ -8,7 +8,7 @@
   | [M365 Message Center updates](https://github.com/einast/PS_M365_scripts/blob/master/M365MessageCenterUpdates.ps1) | Display relevant messages for your tenant from Message Center |
   | [M365 Roadmap updates](https://github.com/einast/PS_M365_scripts/blob/master/M365RoadmapUpdates.ps1) | Parse roadmap data using RSS feed                            |
 
-- Screenshots (hours and minutes are different than in the scripts for testing purposes)
+- Screenshots (last x hours/minutes might differ from the scripts for testing purposes)
 
 ![Screenshot](https://github.com/einast/PS_M365_scripts/blob/master/O365ServiceHealth.PNG)
 
