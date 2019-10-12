@@ -55,7 +55,7 @@ $incidents = $messages.Value | Where-Object {$_.MessageType -eq 'Incident'}
 ForEach ($inc in $incidents){
                 
                 # Get the latest message in the event (avoid duplicates)
-          [int]$msgCount = ($message.Messages.Count)-1
+                [int]$msgCount = ($message.Messages.Count)-1
                 
                 # Set the color line of the card according to the Classification of the event, or if it has ended
                 if ($inc.Classification -eq "Incident" -and $inc.EndTime -eq $null)
