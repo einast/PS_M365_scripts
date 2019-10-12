@@ -91,7 +91,7 @@ If (($Now - [datetime]$inc.LastUpdatedTime).TotalMinutes -le $Minutes) {
                         name = 'Severity'
                         value = $inc.Severity
                         },
-                         @{
+                        @{
                         name = 'Classification'
                         value = $inc.Classification
                         },
@@ -107,7 +107,7 @@ If (($Now - [datetime]$inc.LastUpdatedTime).TotalMinutes -le $Minutes) {
                         name = 'Incident End Time (UTC)'
                         value = $inc.EndTime
                         },
-                         @{
+                        @{
                         name = 'Post Inc Document'
                         value = $inc.PostIncidentDocumentUrl
                         }                            
