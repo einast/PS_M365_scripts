@@ -57,8 +57,8 @@ If (($Now - [datetime]$inc.LastUpdatedTime).TotalHours -le $Hours) {
             @{
             facts = @(
             @{
-                name = "Incident Number"
-                value = $inc.ID
+                name = "Title"
+                value = $inc.Title
                 },
                 @{
                 name = "Affected Service"
