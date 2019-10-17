@@ -12,6 +12,6 @@
 
 ![Screenshot](https://github.com/einast/PS_M365_scripts/blob/master/O365ServiceHealth2.PNG)
 
-![Screenshot](https://github.com/einast/PS_M365_scripts/blob/master/M365MessageCenter.PNG)
+![Screenshot](https://github.com/einast/PS_M365_scripts/blob/master/M365MessageCenter2.PNG)
 
 ![Screenshot](https://github.com/einast/PS_M365_scripts/blob/master/TeamsRoadmapWebHook.PNG)
