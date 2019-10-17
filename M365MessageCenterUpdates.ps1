@@ -1,3 +1,11 @@
+$uri = 'https://outlook.office.com/webhook/dd9359ec-ffab-473a-b7aa-3a7a465d4902@50909e35-f818-4485-9c84-5b4313d0caec/IncomingWebhook/8aa9f61d8cc24b37a5213175da718986/d5158fb0-4d85-4213-8177-355adea2f438'
+$ApplicationID = '2320f718-bc95-4c0b-a7a4-c294ca1b5d8f'
+$ApplicationKey = 'EFHYl746vbcB8L@pgXRV=KDpHMs?_[y?'
+$TenantDomain = 'asting.net' # Alternatively use DirectoryID if tenant domain fails
+$Now = Get-Date
+$Hours = '24'    
+$color = '0377fc'
+
 <#
 .SYNOPSIS
   Get Microsoft 365 Message Center updates and post to Teams using webhooks
@@ -14,18 +22,18 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        1.5
+  Version:        2.0
   Author:         Einar Asting (einar@asting.net)
-  Creation Date:  Oct 14th 2019
-  Purpose/Change: Replaced module with Invoke-RestMethod
+  Creation Date:  Oct 17h 2019
+  Purpose/Change: Updated card with buttons etc
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
 
 # User defined variables
-$ApplicationID = 'application ID'
-$ApplicationKey = 'application key'
-$TenantDomain = 'your FQDN' # Alternatively use DirectoryID if tenant domain fails
+$ApplicationID = 'App ID'
+$ApplicationKey = 'App key'
+$TenantDomain = 'tenant domain' # Alternatively use DirectoryID if tenant domain fails
 $URI = 'Teams webhook URI'
 $Now = Get-Date
 $Hours = '24'    
@@ -47,47 +55,78 @@ $color = '0377fc'
 # Parse data
 ForEach ($inc in $incidents){
                              
-If (($Now - [datetime]$inc.LastUpdatedTime).TotalHours -le $Hours) {
+	# Add updates posted last 24 hours
+	If (($Now - [datetime]$inc.LastUpdatedTime).TotalHours -le $Hours) {
 
-    $Payload = ConvertTo-Json -Depth 4 @{
-        Text = "Office 365 Message Center updates past " + $Hours + " hours - MC ID: " + $inc.ID
-        themeColor = $color
-        Summary = $Inc.Title
-        sections = @(
-            @{
-            facts = @(
-            @{
-                name = "Title"
-                value = $inc.Title
-                },
-                @{
-                name = "Affected Service"
-                value = $inc.AffectedWorkloadDisplayNames
-                },
-                @{
-                name = "Classification"
-                value = $inc.Classification
-                },
-                @{
-                name = "Action Type"
-                value = $inc.ActionType
-                },
-                @{
-                name = "Information"
-                value = $inc.Messages.MessageText
-                },
-                @{
-                name = 'Last Updated (UTC)'
-                value = $inc.LastUpdatedTime
-                },
-                @{
-                name = "Link"
-                value = "<a href="+$($inc.ExternalLink)+">"+$($inc.ExternalLink)+"</a>"
+	# Convert MessageText to JSON beforehand, if not the payload will fail.
+	$Message = ConvertTo-Json $inc.Messages.MessageText
+
+# Generate payload(s)
+$Payload =  @"
+{
+    "@context": "https://schema.org/extensions",
+    "@type": "MessageCard",
+    "potentialAction": [
+            {
+            "@type": "OpenUri",
+            "name": "More info",
+            "targets": [
+                {
+                    "os": "default",
+                    "uri": "$($inc.ExternalLink)"
                 }
-                )
-            }
-          )
+            ]
+
+        },
+        {
+            "@type": "OpenUri",
+            "name": "Blog link",
+            "targets": [
+                {
+                    "os": "default",
+                    "uri": "$($inc.BlogLink)"
+                }
+            ]
+
+        },
+        {
+            "@type": "OpenUri",
+            "name": "Help link",
+            "targets": [
+                {
+                    "os": "default",
+                    "uri": "$($inc.HelpLink)"
+                }
+            ]
+
+        }        
+    ],
+    "sections": [
+        {
+            "facts": [
+                {
+                    "name": "Service:",
+                    "value": "$($inc.AffectedWorkloadDisplayNames)"
+                },
+                {
+                    "name": "Action Type:",
+                    "value": "$($inc.ActionType)"
+                },
+                {
+                    "name": "Classification:",
+                    "value": "$($inc.Classification)"
+                }
+            ],
+            "text": $($Message)
         }
-      }
-    }
-Invoke-RestMethod -ContentType "Application/Json" -Method Post -Body $Payload -Uri $URI -Verbose
+    ],
+    "summary": "$($Inc.Title)",
+    "themeColor": "0377fc",
+    "title": "$($Inc.Id) - $($Inc.Title)"
+}
+"@
+
+# If any new posts, add to Teams
+Invoke-RestMethod -uri $uri -Method Post -body $Payload -ContentType 'application/json'
+  }
+}
