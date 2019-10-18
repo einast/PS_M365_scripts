@@ -121,7 +121,7 @@ $Payload =  @"
         }
     ],
     "summary": "$($Inc.Title)",
-    "themeColor": "0377fc",
+    "themeColor": "$($color)",
     "title": "$($Inc.Id) - $($Inc.Title)"
 }
 "@
