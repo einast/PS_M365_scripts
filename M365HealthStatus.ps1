@@ -75,7 +75,7 @@ ForEach ($inc in $incidents){
 If (($Now - [datetime]$inc.LastUpdatedTime).TotalMinutes -le $Minutes) {
 
 # Pick latest message in the message index and convert the text to JSON before generating payload (if not it will fail).
-$Message = $inc.Messages.MessageText[$inc.Messages.Count-1] | ConvertTo-Json # -Compress | %{[regex]::Unescape($_)}
+$Message = $inc.Messages.MessageText[$inc.Messages.Count-1] | ConvertTo-Json
   
 # Generate payload(s)
 $Payload =  @"
