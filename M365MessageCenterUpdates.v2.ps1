@@ -116,6 +116,6 @@ $Payload =  @"
 "@
 
 # If any new posts, add to Teams
-Invoke-RestMethod -uri $uri -Method Post -body $Payload -ContentType 'application/json'
+Invoke-RestMethod -uri $uri -Method Post -body $Payload -ContentType 'application/json; charset=utf-8'
   }
 }
