@@ -1,11 +1,3 @@
-$uri = 'https://outlook.office.com/webhook/dd9359ec-ffab-473a-b7aa-3a7a465d4902@50909e35-f818-4485-9c84-5b4313d0caec/IncomingWebhook/8aa9f61d8cc24b37a5213175da718986/d5158fb0-4d85-4213-8177-355adea2f438'
-$ApplicationID = '2320f718-bc95-4c0b-a7a4-c294ca1b5d8f'
-$ApplicationKey = 'EFHYl746vbcB8L@pgXRV=KDpHMs?_[y?'
-$TenantDomain = 'asting.net' # Alternatively use DirectoryID if tenant domain fails
-$Now = Get-Date
-$Hours = '24'    
-$color = '0377fc'
-
 <#
 .SYNOPSIS
   Get Microsoft 365 Message Center updates and post to Teams using webhooks
