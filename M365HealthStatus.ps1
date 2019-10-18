@@ -22,10 +22,10 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        1.5
+  Version:        2.0
   Author:         Einar Asting (einar@asting.net)
-  Creation Date:  Oct 12nd 2019
-  Purpose/Change: Replaced module used with Invoke-RestMethod
+  Creation Date:  Oct 17th 2019
+  Purpose/Change: Rewrote card appearance
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
@@ -53,10 +53,7 @@ $incidents = $messages.Value | Where-Object {$_.MessageType -eq 'Incident'}
 
 # Parse data
 ForEach ($inc in $incidents){
-                
-                # Get the latest message in the event (avoid duplicates)
-                [int]$msgCount = ($message.Messages.Count)-1
-                
+                  
                 # Set the color line of the card according to the Classification of the event, or if it has ended
                 if ($inc.Classification -eq "Incident" -and $inc.EndTime -eq $null)
                 {
@@ -74,49 +71,59 @@ ForEach ($inc in $incidents){
                             }
                         }
                              
+# Add updates posted last $Minutes
 If (($Now - [datetime]$inc.LastUpdatedTime).TotalMinutes -le $Minutes) {
-           
-            $Payload = ConvertTo-Json -Depth 4 @{
-            text = 'Service status updates past ' +  $($Minutes) + ' minutes - INC ID: ' + $($inc.ID)
-            themeColor = $color
-            sections = @(
-                        @{
-                    title = $inc.WorkloadDisplayName + ' - ' + $inc.Title
-                    facts = @(
-                        @{
-                        name = 'Status'
-                        value = $inc.Status
-                        },
-                        @{
-                        name = 'Severity'
-                        value = $inc.Severity
-                        },
-                        @{
-                        name = 'Classification'
-                        value = $inc.Classification
-                        },
-                        @{
-                        name = 'More information'
-                        value = $inc.Messages[$msgCount].MessageText
-                        },
-                        @{
-                        name = 'Last Updated (UTC)'
-                        value = $inc.LastUpdatedTime
-                        },
-                        @{
-                        name = 'Incident End Time (UTC)'
-                        value = $inc.EndTime
-                        },
-                        @{
-                        name = 'Post Inc Document'
-                        value = $inc.PostIncidentDocumentUrl
-                        }                            
-                    )
+
+# Pick latest message in the message index and convert the text to JSON before generating payload (if not it will fail).
+$Message = $inc.Messages.MessageText[$inc.Messages.Count-1] | ConvertTo-Json # -Compress | %{[regex]::Unescape($_)}
+  
+# Generate payload(s)
+$Payload =  @"
+{
+    "@context": "https://schema.org/extensions",
+    "@type": "MessageCard",
+    "potentialAction": [
+            {
+            "@type": "OpenUri",
+            "name": "Post INC document",
+            "targets": [
+                {
+                    "os": "default",
+                    "uri": "$($inc.PostIncidentDocumentUrl)"
                 }
-            )
+            ]
+        },           
+    ],
+    "sections": [
+        {
+            "facts": [
+                {
+                    "name": "Service:",
+                    "value": "$($inc.WorkloadDisplayName)"
+                },
+                {
+                    "name": "Status:",
+                    "value": "$($inc.Status)"
+                },
+                {
+                    "name": "Severity:",
+                    "value": "$($inc.Severity)"
+                },
+                {
+                    "name": "Classification:",
+                    "value": "$($inc.Classification)"
+                }
+            ],
+            "text": $($Message)
         }
-        #Convert to UTF8 and post any new events to Teams
-        $Payload = ([System.Text.Encoding]::UTF8.GetBytes($Payload))
-        Invoke-Webrequest -URI $URI -Method POST -Body $Payload
-        }
-   }
+    ],
+    "summary": "$($Inc.Title)",
+    "themeColor": "$($color)",
+    "title": "$($Inc.Id) - $($Inc.Title)"
+}
+"@
+
+# If any new posts, add to Teams
+Invoke-RestMethod -uri $uri -Method Post -body $Payload -ContentType 'application/json; charset=utf-8'
+  }
+}
