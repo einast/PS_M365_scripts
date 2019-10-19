@@ -99,7 +99,7 @@ $Payload =  @"
     ],
     "summary": "$($msg.Title)",
     "themeColor": "$($color)",
-    "title": "$($msg.Title)"
+    "title": "Feature ID: $($msg.guid.'#text') - $($msg.Title)"
 }
 "@
 # If any new posts, add to Teams
