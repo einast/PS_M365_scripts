@@ -5,7 +5,7 @@
   | Script                                                       | Description                                                  |
   | ------------------------------------------------------------ | ------------------------------------------------------------ |
   | [M365 Health status](https://github.com/einast/PS_M365_scripts/blob/master/M365HealthStatus.ps1) | Display M365 health events relevant for your tenant          |
-  | [M365 Message Center updates](https://github.com/einast/PS_M365_scripts/blob/master/M365MessageCenterUpdates.v2.ps1 up) | Display relevant messages for your tenant from Message Center |
+  | [M365 Message Center updates](https://github.com/einast/PS_M365_scripts/blob/master/M365MessageCenterUpdates.v2.ps1) | Display relevant messages for your tenant from Message Center |
   | [M365 Roadmap updates](https://github.com/einast/PS_M365_scripts/blob/master/M365RoadmapUpdates.ps1) | Display roadmap updates using RSS feed                            |
 
 - Screenshots
