@@ -2,9 +2,15 @@
 .SYNOPSIS
   Get Microsoft 365 Roadmap update and post to Teams using webhooks
 .DESCRIPTION
-  Script to check Microsoft 365 Roadmap RSS feed, configured to check last 24 hours (can be adapted as required). Run as a scheduled task.
+  Script to check Microsoft 365 Roadmap RSS feed, configured to check last 24 hours (can be adapted as required). Run as a scheduled task, Azure automation runbook etc.
   Create a webhook in Teams and copy the URI to the variable section below.
-  The output will be color coded (can be adapted as required) according to Status of the Feature - Red = In development, Yellow = Rolling out, Green = Launched
+  
+  The output will be color coded (can be adapted as required) according to Status of the Feature:
+  
+    Red = In development
+    Yellow = Rolling out
+    Green = Launched
+  
   Replace the variables with your own where feasible
   
   Disclaimer: This script is offered "as-is" with no warranty. 
@@ -12,40 +18,33 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        1.0
+  Version:        2.0
   Author:         Einar Asting (einar@asting.net)
-  Creation Date:  Oct 2nd 2019
-  Purpose/Change: Initial version
+  Creation Date:  Oct 19nd 2019
+  Purpose/Change: Rewrote code, new cards with buttons, removed temp file etc
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
 
-# Variables
+# User defined variables
+$ApplicationID = 'App ID'
+$ApplicationKey = 'App key'
+$URI = 'Teams webhook URI'
+$Roadmap = 'https://www.microsoft.com/en-us/microsoft-365/RoadmapFeatureRSS'
+$Hours = '24'
+$Now = Get-Date
 
-    # Your Teams Webhook URI
-    $URI = 'URI to Teams webhook'
+# Request data
+$messages = (Invoke-RestMethod -Uri $Roadmap -Headers $headerParams -Method Get)
 
-    # M365 Roadmap RSS URL
-    $ParseFrom = 'https://www.microsoft.com/en-us/microsoft-365/RoadmapFeatureRSS'
+# Parse data
+ForEach ($msg in $messages){
 
-    # Temp file location
-    $TempFile = 'C:\Folder\test.xml'
+        # Add updates posted last 24 hours                
+        If (($Now - [datetime]$msg.pubDate).TotalHours -le $Hours) {
 
-    # Last x hours to check for updates
-    $Hours = '24'
-
-    # Read current date and time
-    $Now = Get-Date
-
-# Get content
-Invoke-WebRequest -Uri $ParseFrom -OutFile $TempFile -ErrorAction Stop
-
-# Parse
-[xml]$Content = Get-Content $TempFile
-
-  $Feed = $Content.rss.channel
-
-  ForEach ($msg in $Feed.Item){
+                # Convert MessageText to JSON beforehand, if not the payload will fail.
+                $Message = ConvertTo-Json $msg.description
 
                 #Set the color line of the card according to the Status of the environment
                 if ($msg.category[0] -eq "In development")
@@ -63,44 +62,45 @@ Invoke-WebRequest -Uri $ParseFrom -OutFile $TempFile -ErrorAction Stop
                                             $color = "00cc00"
                                             }
                                  }
-    If (($Now - [datetime]$msg.pubDate).TotalHours -le $Hours) {
+    
           
-                $Payload = ConvertTo-Json -Depth 4 @{
-                text = 'Roadmap updates past ' +  $($Hours) + ' hours - Feature ID: ' + $($msg.guid.'#text')
-                themeColor = $color
-                sections = @(
-                            @{
-                        title = $msg.title
-                        facts = @(
-                            @{
-                            name = 'Environment'
-                            value = $msg.category[1]
-                            },
-                            @{
-                            name = 'Status'
-                            value = $msg.category[0]
-                            },
-                            @{
-                            name = 'Description'
-                            value = $msg.description
-                            },
-                            @{
-                            name = 'Published date'
-                            value = $msg.pubDate
-                            }
-                            @{
-                            name = 'Link'
-                            value = '<a href=' + $msg.link + '>'  + $msg.link + '</a>'
-                            }
-                        )
-                    }
-                )
-            }
-            #Convert to UTF8
-            $Payload = ([System.Text.Encoding]::UTF8.GetBytes($Payload))
-            Invoke-webrequest -URI $URI -Method POST -Body $Payload
+$Payload =  @"
+{
+    "@context": "https://schema.org/extensions",
+    "@type": "MessageCard",
+    "potentialAction": [
+            {
+            "@type": "OpenUri",
+            "name": "More info",
+            "targets": [
+                {
+                    "os": "default",
+                    "uri": "$($msg.Link)"
+                }
+            ]
+        },
+     ],
+    "sections": [
+        {
+            "facts": [
+                {
+                    "name": "Status:",
+                    "value": "$($msg.category[0])"
+                },
+                {
+                    "name": "Environment:",
+                    "value": "$($msg.category[1])"
+                }
+            ],
+            "text": $($message)
+        }
+    ],
+    "summary": "$($msg.Title)",
+    "themeColor": "$($color)",
+    "title": "$($msg.Title)"
+}
+"@
+# If any new posts, add to Teams
+Invoke-RestMethod -uri $uri -Method Post -body $Payload -ContentType 'application/json; charset=utf-8'
         }
      }
-
-# Clean up
-Remove-Item $TempFile -Force
