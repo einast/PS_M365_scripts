@@ -27,8 +27,6 @@
 #>
 
 # User defined variables
-$ApplicationID = 'App ID'
-$ApplicationKey = 'App key'
 $URI = 'Teams webhook URI'
 $Roadmap = 'https://www.microsoft.com/en-us/microsoft-365/RoadmapFeatureRSS'
 $Hours = '24'
@@ -42,7 +40,11 @@ ForEach ($msg in $messages){
 
         # Add updates posted last 24 hours                
         If (($Now - [datetime]$msg.pubDate).TotalHours -le $Hours) {
-
+                
+                # Count, join and prepare category for use in the card
+                $categoryno = $msg.category.Count
+                $category = $msg.category[1..$categoryno] -join ", "
+                
                 # Convert MessageText to JSON beforehand, if not the payload will fail.
                 $Message = ConvertTo-Json $msg.description
 
@@ -63,7 +65,7 @@ ForEach ($msg in $messages){
                                             }
                                  }
     
-          
+# Generate payload(s)          
 $Payload =  @"
 {
     "@context": "https://schema.org/extensions",
@@ -88,8 +90,8 @@ $Payload =  @"
                     "value": "$($msg.category[0])"
                 },
                 {
-                    "name": "Environment:",
-                    "value": "$($msg.category[1])"
+                    "name": "Category:",
+                    "value": "$($category)"
                 }
             ],
             "text": $($message)
