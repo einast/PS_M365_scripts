@@ -1,6 +1,6 @@
 # Microsoft 365 Powershell scripts
 
-#### [Scripts for posting updates from Microsoft Message Center (both incidents and announcements), and updates from the Office 365 roadmap, to Teams via webhooks] (https://github.com/einast/PS_M365_scripts/blob/master/teamscards.md) ####
+#### [Scripts for posting updates from Microsoft Message Center (both incidents and announcements), and updates from the Office 365 roadmap, to Teams via webhooks](https://github.com/einast/PS_M365_scripts/blob/master/teamscards.md) ####
 
   | Script                                                       | Description                                                  |
   | ------------------------------------------------------------ | ------------------------------------------------------------ |
