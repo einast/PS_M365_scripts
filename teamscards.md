@@ -18,13 +18,13 @@
 
 #### Screenshots ####
 
-Service Health:
+Health status:
 ![Screenshot](https://github.com/einast/PS_M365_scripts/blob/master/O365ServiceHealth3.PNG)
 
-Message Center:
+Message Center updates:
 ![Screenshot](https://github.com/einast/PS_M365_scripts/blob/master/M365MessageCenter2.PNG)
 
-Roadmap:
+Roadmap updates:
 ![Screenshot](https://github.com/einast/PS_M365_scripts/blob/master/TeamsRoadmapWebHook3.PNG)
 
 [![alt text][1.1]][1]
