@@ -1,4 +1,4 @@
-### Scripts for posting updates from Microsoft Message Center (both incidents and announcements), and updates from the Office 365 roadmap, to Teams via webhooks ###
+### ![Screenshot](https://github.com/einast/PS_M365_scripts/blob/master/teams-icon.jpg) Scripts for posting updates from Microsoft Message Center (both incidents and announcements), and updates from the Office 365 roadmap, to Teams via webhooks ###
 
   | Script                                                       | Description                                                  |
   | ------------------------------------------------------------ | ------------------------------------------------------------ |
