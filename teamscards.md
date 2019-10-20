@@ -1,4 +1,4 @@
-### Microsoft Teams message cards - parsing info from external sources
+### Scripts for posting updates from Microsoft Message Center (both incidents and announcements), and updates from the Office 365 roadmap, to Teams via webhooks ###
 
   | Script                                                       | Description                                                  |
   | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -8,7 +8,13 @@
 
 #### Pre-requisites ####
 
-Two of the scripts require a 
+- Health status and Message Center scripts require app registration in Azure. There is a guide [here](https://evotec.xyz/preparing-azure-app-registrations-permissions-for-office-365-health-service/) that describes in detail how to set it up (the roadmap script does not need this).
+
+- You also need to set up a webhook in your Teams channel of choice, and copy the URI in to the scripts.
+
+- Adapt the user variables section in each script to work with you environment.
+
+- For running the scripts, I configure them with Azure Automation runbooks set on schedules.
 
 #### Screenshots ####
 
