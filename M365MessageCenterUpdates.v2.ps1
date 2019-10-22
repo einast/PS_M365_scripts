@@ -50,8 +50,9 @@ ForEach ($inc in $incidents){
 	# Add updates posted last 24 hours
 	If (($Now - [datetime]$inc.LastUpdatedTime).TotalHours -le $Hours) {
 
-	# Convert MessageText to JSON beforehand, if not the payload will fail.
-	$Message = ConvertTo-Json $inc.Messages.MessageText
+	# Clean up output (replace brackets with HTML), convert MessageText to JSON beforehand, if not the payload will fail.
+    	$Message = $inc.Messages.MessageText -replace [regex]::Escape("["), "<br><b>" -replace [regex]::Escape("]"), "</b><br><br>" 
+    	$Message = ConvertTo-Json $Message
 
 # Generate payload(s)
 $Payload =  @"
