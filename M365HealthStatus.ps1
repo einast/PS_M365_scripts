@@ -53,7 +53,10 @@ $incidents = $messages.Value | Where-Object {$_.MessageType -eq 'Incident'}
 
 # Parse data
 ForEach ($inc in $incidents){
-                  
+                
+                # Add updates posted last $Minutes
+                If (($Now - [datetime]$inc.LastUpdatedTime).TotalMinutes -le $Minutes) {
+                
                 # Set the color line of the card according to the Classification of the event, or if it has ended
                 if ($inc.Classification -eq "Incident" -and $inc.EndTime -eq $null)
                 {
@@ -70,9 +73,6 @@ ForEach ($inc in $incidents){
                             $color = "ffff00" # Yellow
                             }
                         }
-                             
-# Add updates posted last $Minutes
-If (($Now - [datetime]$inc.LastUpdatedTime).TotalMinutes -le $Minutes) {
 
 # Pick latest message in the message index and convert the text to JSON before generating payload (if not it will fail).
 $Message = $inc.Messages.MessageText[$inc.Messages.Count-1] | ConvertTo-Json
@@ -125,5 +125,5 @@ $Payload =  @"
 
 # If any new posts, add to Teams
 Invoke-RestMethod -uri $uri -Method Post -body $Payload -ContentType 'application/json; charset=utf-8'
+    }
   }
-}
