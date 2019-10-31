@@ -30,13 +30,31 @@
   https://github.com/einast/PS_M365_scripts
 #>
 
-# User defined variables
-$ApplicationID = 'application ID'
-$ApplicationKey = 'application key'
-$TenantDomain = 'your FQDN' # Alternatively use DirectoryID if tenant domain fails
-$URI = 'Teams webhook URI'
+param (
+    # Your AppID
+    [Parameter(Mandatory=$True)]
+    [string]
+    $ApplicationID,
+    # Your Application Key
+    [Parameter(Mandatory=$True)]
+    [string]
+    $ApplicationKey,
+    # Your AAD Tenant Domain
+    [Parameter(Mandatory=$True)]
+    [string]
+    $TenantDomain,
+    # Your Teams Webhook URL
+    [Parameter(Mandatory=$True)]
+    [string]
+    $URI,
+    # Minutes between runs. Make sure to align this with your schedule
+    [Parameter()]
+    [int]
+    $Minutes = 15
+)
+
+# Get the current time
 $Now = Get-Date
-$Minutes = '15'
 
 # Request data
 $body = @{
