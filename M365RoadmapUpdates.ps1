@@ -36,37 +36,32 @@ $Now = Get-Date
 $messages = (Invoke-RestMethod -Uri $Roadmap -Headers $headerParams -Method Get)
 
 # Parse data
-ForEach ($msg in $messages){
+ForEach ($msg in $messages) {
 
-        # Add updates posted last 24 hours                
-        If (($Now - [datetime]$msg.pubDate).TotalHours -le $Hours) {
+    # Add updates posted last 24 hours                
+    If (($Now - [datetime]$msg.pubDate).TotalHours -le $Hours) {
                 
-                # Count, join and prepare category for use in the card
-                $categoryno = $msg.category.Count
-                $category = $msg.category[1..$categoryno] -join ", "
+        # Count, join and prepare category for use in the card
+        $categoryno = $msg.category.Count
+        $category = $msg.category[1..$categoryno] -join ", "
                 
-                # Convert MessageText to JSON beforehand, if not the payload will fail.
-                $Message = ConvertTo-Json $msg.description
+        # Convert MessageText to JSON beforehand, if not the payload will fail.
+        $Message = ConvertTo-Json $msg.description
 
-                #Set the color line of the card according to the Status of the environment
-                if ($msg.category[0] -eq "In development")
-                    {
-                    $color = "ff0000"
-                    }
-                    else
-                        {
-                            if ($msg.category[0] -eq "Rolling out")
-                                {
-                                    $color = "ffff00"
-                                    }
-                                    else
-                                        {
-                                            $color = "00cc00"
-                                            }
-                                 }
+        #Set the color line of the card according to the Status of the environment
+        if ($msg.category.Contains("In development")) {
+            $color = "ff0000"
+        }
+        
+        elseif ($msg.category.Contains("Rolling out")) {
+            $color = "ffff00"
+        }
+        else {
+            $color = "00cc00"
+        }
     
-# Generate payload(s)          
-$Payload =  @"
+    # Generate payload(s)          
+    $Payload = @"
 {
     "@context": "https://schema.org/extensions",
     "@type": "MessageCard",
@@ -102,7 +97,7 @@ $Payload =  @"
     "title": "Feature ID: $($msg.guid.'#text') - $($msg.Title)"
 }
 "@
-# If any new posts, add to Teams
-Invoke-RestMethod -uri $uri -Method Post -body $Payload -ContentType 'application/json; charset=utf-8'
-        }
-     }
+    # If any new posts, add to Teams
+    Invoke-RestMethod -uri $uri -Method Post -body $Payload -ContentType 'application/json; charset=utf-8'
+    }
+}
