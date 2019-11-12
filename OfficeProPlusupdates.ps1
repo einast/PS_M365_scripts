@@ -62,7 +62,7 @@ $monthlyDate = Get-Date $monthlyLastUpdated
 
     # Select latest updates
     $monthlycontentpattern = '(\<h2.+?\>)((.|\n)+?(?=<h2.+?\>))'
-    $monthlyupdate = $Monthlyweb | select-string  -Pattern $contentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+    $monthlyupdate = $Monthlyweb | select-string  -Pattern $monthlycontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
     $monthlycontent = $monthlyupdate | ConvertTo-Json
 
 #Generate payload
