@@ -11,10 +11,10 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        1.0
+  Version:        1.1
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Nov 9th 2019
-  Purpose/Change: Initial version
+  Creation Date:  Nov 12th 2019
+  Purpose/Change: Fixed typo, added article suffix to link button
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
@@ -60,6 +60,10 @@ $monthlyDate = Get-Date $monthlyLastUpdated
     $monthlytitlepattern = '(?<=\<h2.*?\>)(.*?)(?=<\/h2\>)'
     $monthlytitle = $Monthlyweb | select-string  -Pattern $monthlytitlepattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
 
+    # Tailor the "More info" button by adding suffix to link to right section of the webpage
+    $monthlylinkpattern = '(?<=\<h2.*?\")(.*?)(?=\"\>)'
+    $monthlylink = $Monthlyweb | Select-String -Pattern $monthlylinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+
     # Select latest updates
     $monthlycontentpattern = '(\<h2.+?\>)((.|\n)+?(?=<h2.+?\>))'
     $monthlyupdate = $Monthlyweb | select-string  -Pattern $monthlycontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
@@ -78,7 +82,7 @@ $MonthlyPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-channel-$($Year)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-channel-$($Year)#$($monthlylink)"
                 }
             ]
         },
@@ -131,6 +135,10 @@ $SACTDate = Get-Date $sactLastUpdated
     $sacttitlepattern = '(?<=\<h2.*?\>)(.*?)(?=<\/h2\>)'
     $sacttitle = $SACTweb | select-string  -Pattern $sacttitlepattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
 
+    # Tailor the "More info" button by adding suffix to link to right section of the webpage
+    $sactlinkpattern = '(?<=\<h2.*?\")(.*?)(?=\"\>)'
+    $sactlink = $SACTweb | Select-String -Pattern $sactlinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+
     # Select latest updates
     $sactcontentpattern = '(\<h2.+?\>)((.|\n)+?(?=<h2.+?\>))'
     $sactupdate = $SACTweb | select-string  -Pattern $sactcontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
@@ -149,7 +157,7 @@ $SACTPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel-targeted-$($Year)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-channel-$($Year)#$($sactlink)"
                 }
             ]
         },
@@ -202,6 +210,10 @@ $SACDate = Get-Date $sacLastUpdated
     $sactitlepattern = '(?<=\<h2.*?\>)(.*?)(?=<\/h2\>)'
     $sactitle = $SACweb | select-string  -Pattern $sactitlepattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
 
+    # Tailor the "More info" button by adding suffix to link to right section of the webpage
+    $saclinkpattern = '(?<=\<h2.*?\")(.*?)(?=\"\>)'
+    $saclink = $SACweb | Select-String -Pattern $saclinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+
     # Select latest updates
     $saccontentpattern = '(\<h2.+?\>)((.|\n)+?(?=<h2.+?\>))'
     $sacupdate = $SACweb | select-string  -Pattern $saccontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
@@ -220,7 +232,7 @@ $SACPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel-$($Year)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-channel-$($Year)#$($saclink)"
                 }
             ]
         },
