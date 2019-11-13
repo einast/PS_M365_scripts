@@ -157,7 +157,7 @@ $SACTPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-channel-$($Year)#$($sactlink)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel-targeted-$($Year)#$($sactlink)"
                 }
             ]
         },
@@ -232,7 +232,7 @@ $SACPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-channel-$($Year)#$($saclink)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel-$($Year)#$($saclink)"
                 }
             ]
         },
