@@ -26,7 +26,7 @@
   Creation Date:  Nov 18th 2019
   Purpose/Change: Rewrote script for Azure Automation
 .LINK
-  https://github.com/einast/M365_Scripts/Azuresdfsdf
+  https://github.com/einast/PS_M365_scripts/AzureAutomation
 #>
 
 # User defined variables

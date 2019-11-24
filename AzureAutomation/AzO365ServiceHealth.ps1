@@ -36,7 +36,7 @@
   Creation Date:  Nov 17th 2019
   Purpose/Change: Rewritten for Azure Automation
 .LINK
-  https://github.com/einast/PS_M365_scripts
+  https://github.com/einast/PS_M365_scripts/AzureAutomation
 #>
 
 # User defined variables
