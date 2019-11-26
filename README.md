@@ -1,6 +1,7 @@
 # Microsoft 365 Powershell scripts
 
-- Scripts for posting updates from Microsoft Message Center (both incidents and announcements), updates from the Office 365 roadmap, and more, to Teams via webhooks
+- Scripts for posting updates from Microsoft Message Center (both incidents and announcements), updates from the Office 365 roadmap, and more, to Teams via webhooks.
+- Azure Automation adapted scripts are in the AzureAutomation folder
 
 For more detailed information, check out my [blog](https://thingsinthe.cloud).
 
