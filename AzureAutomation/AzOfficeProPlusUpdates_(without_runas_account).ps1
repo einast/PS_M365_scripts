@@ -2,7 +2,10 @@
 .SYNOPSIS
   Get Microsoft Office ProPlus channel updates and post to Teams using webhooks and Azure Automation variable assets
 .DESCRIPTION
-  Script to check Microsoft Office ProPlus channel updates, configured to check last 12 hours (can be adapted as required). Run as a scheduled task, Azure automation etc.
+  Script to check Microsoft Office ProPlus channel updates, configured to check last 12 hours (can be adapted as required).
+  
+  Adapted for Azure automation.
+  
   Create one or more webhook in Teams (if you want to split the updates into separate channels) and copy the URI(s) to the user variable section below.
   The output is color coded (can be adapted as required). Default is green.
 
