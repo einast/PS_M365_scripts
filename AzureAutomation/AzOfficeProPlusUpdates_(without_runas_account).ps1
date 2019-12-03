@@ -243,7 +243,7 @@ $sactPayload =  @"
 $sactPayloadAZ = Get-AutomationVariable $AzAutomationPayloadSACTVariable
 
 If ($sactcontent -ne $sactPayloadAZ) {
-    Invoke-RestMethod -uri $sactURI.Value -Method Post -body $sactPayload -ContentType 'application/json; charset=utf-8'
+    Invoke-RestMethod -uri $sactURI -Method Post -body $sactPayload -ContentType 'application/json; charset=utf-8'
     Set-AutomationVariable -Name $AzAutomationPayloadSACTVariable -Value ($sactcontent -as [string])
     }
     Else {
@@ -339,8 +339,8 @@ $SACPayload =  @"
 
 $SACPayloadAZ = Get-AutomationVariable -Name $AzAutomationPayloadSACVariable
 
-If ($saccontent -ne $SACPayloadAZ.Value) {
-    Invoke-RestMethod -uri $SACURI.Value -Method Post -body $SACPayload -ContentType 'application/json; charset=utf-8'
+If ($saccontent -ne $SACPayloadAZ) {
+    Invoke-RestMethod -uri $SACURI -Method Post -body $SACPayload -ContentType 'application/json; charset=utf-8'
     Set-AutomationVariable -Name $AzAutomationPayloadSACVariable -Value ($saccontent -as [string])    
     }
     Else {
