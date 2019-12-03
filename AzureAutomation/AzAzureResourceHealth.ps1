@@ -25,7 +25,7 @@
  
 .NOTES
   Version:        2.0
-  Author:         Einar Asting (einar@asting.net)
+  Author:         Einar Asting (einar@thingsinthe.cloud)
   Creation Date:  Nov 22nd 2019
   Purpose/Change: Rewrote for Azure Automation
 .LINK
