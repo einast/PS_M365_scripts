@@ -167,13 +167,6 @@ Else {
 If ($AzAutomationURISactVariable) {
 $sactURI = Get-AutomationVariable -Name $AzAutomationURISactVariable
 
-# Looking for Azure automation variable for SACT channel, if it's not existing, create it
-If (!(Get-AzureRmAutomationVariable -AutomationAccountName $AzAutomationAccountName -Name $AzAutomationPayloadSACTVariable -ResourceGroupName $AzResourceGroup -ErrorAction SilentlyContinue)) {
-    New-AzureRMAutomationVariable -AutomationAccountName $AzAutomationAccountName -Name $AzAutomationPayloadSACTVariable -ResourceGroupName $AzResourceGroup -Value $null -Encrypted $false
-    }
-    Else {    
-    }
-
 #Get data
 $sactweb = Invoke-RestMethod -Uri $SACT
 
@@ -259,17 +252,7 @@ Else {
 
 # Check if channel is set for checking, if so, do stuff
 If ($AzAutomationURISactVariable) {
-$sactURI = Get-AutomationVariable -Name $AzAutomationURISacVariable
-
-# Looking for Azure automation variable for SAC channel, if it's not existing, create it
-If (!(Get-AzureRmAutomationVariable -AutomationAccountName $AzAutomationAccountName -Name $AzAutomationPayloadSACVariable -ResourceGroupName $AzResourceGroup -ErrorAction SilentlyContinue)) {
-    New-AzureRmAutomationVariable -AutomationAccountName $AzAutomationAccountName -Name $AzAutomationPayloadSACVariable -ResourceGroupName $AzResourceGroup -Value $null -Encrypted $False
-    }
-    Else {    
-    }
-
-# Setting script variables from Azure Automation variable assets
-$sacURI = Get-AzureRmAutomationVariable -AutomationAccountName $AzAutomationAccountName -Name $AzAutomationURISacVariable -ResourceGroupName $AzResourceGroup
+$sacURI = Get-AutomationVariable -Name $AzAutomationURISacVariable
 
 #Get data
 $SACweb = Invoke-RestMethod -Uri $SAC
