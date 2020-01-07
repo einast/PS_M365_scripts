@@ -17,7 +17,7 @@
   Creation Date:  Jan 7th 2020
   Purpose/Change: Initial version
 .LINK
-  https://github.com/
+  https://github.com/einast/PS_M365_scripts
 #>  
 
 Import-Module PSFTP
