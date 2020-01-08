@@ -13,7 +13,7 @@
   
 .NOTES
   Version:        1.0
-  Author:         Einar Asting (einar@asting.net)
+  Author:         Einar Asting (einar@thingsinthe.cloud)
   Creation Date:  Jan 7th 2020
   Purpose/Change: Initial version
 .LINK
