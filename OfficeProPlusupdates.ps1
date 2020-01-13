@@ -11,10 +11,10 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        1.1
+  Version:        1.2
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Nov 12th 2019
-  Purpose/Change: Fixed typo, added article suffix to link button
+  Creation Date:  Jan 13th 2020
+  Purpose/Change: Updated regex to match Microsoft's 2020 formatting
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
