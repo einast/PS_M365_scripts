@@ -31,10 +31,10 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        1.2
+  Version:        1.7
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Jan 13th 2020
-  Purpose/Change: Updated regex to match Microsoft's 2020 formatting
+  Creation Date:  Jan 17th 2020
+  Purpose/Change: Updated regex to catch correct updates
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
@@ -146,7 +146,7 @@ $monthlyDate = Get-Date $monthlyLastUpdated
     $monthlylink = $Monthlyweb | Select-String -Pattern $monthlylinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -Index 1
 
     # Select latest updates
-    $monthlycontentpattern = '(\<h2 id="v.+?\>)((.|\n)+?(?=<!--.+?\>))'
+    $monthlycontentpattern = '(\<h2 id="v.+?\>)(.|\n)*?(?=(\<h2 id="v.+?\>|<div class.+?\>))'
     $monthlyupdate = $Monthlyweb | select-string  -Pattern $monthlycontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
     $monthlycontent = $monthlyupdate | ConvertTo-Json
 
@@ -240,7 +240,7 @@ $sactDate = Get-Date $sactLastUpdated
     $sactlink = $sactweb | Select-String -Pattern $sactlinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -Index 1
 
     # Select latest updates
-    $sactcontentpattern = '(\<h2 id="v.+?\>)((.|\n)+?(?=<!--.+?\>))'
+    $sactcontentpattern = '(\<h2 id="v.+?\>)(.|\n)*?(?=(\<h2 id="v.+?\>|<div class.+?\>))'
     $sactupdate = $sactweb | select-string  -Pattern $sactcontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
     $sactcontent = $sactupdate | ConvertTo-Json
 
@@ -337,7 +337,7 @@ $SACDate = Get-Date $sacLastUpdated
     $saclink = $SACweb | Select-String -Pattern $saclinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -Index 1
 
     # Select latest updates
-    $saccontentpattern = '(\<h2 id="v.+?\>)((.|\n)+?(?=<!--.+?\>))'
+    $saccontentpattern = '(\<h2 id="v.+?\>)(.|\n)*?(?=(\<h2 id="v.+?\>|<div class.+?\>))'
     $sacupdate = $SACweb | select-string  -Pattern $saccontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
     $saccontent = $sacupdate | ConvertTo-Json
 
