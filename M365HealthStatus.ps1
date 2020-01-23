@@ -22,10 +22,10 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        2.0
-  Author:         Einar Asting (einar@asting.net)
-  Creation Date:  Oct 17th 2019
-  Purpose/Change: Rewrote card appearance
+  Version:        2.1
+  Author:         Einar Asting (einar@thingsinthe.cloud)
+  Creation Date:  Jan 23rd 2020
+  Purpose/Change: Added option to filter services and classifications 
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
@@ -35,8 +35,69 @@ $ApplicationID = 'application ID'
 $ApplicationKey = 'application key'
 $TenantDomain = 'your FQDN' # Alternatively use DirectoryID if tenant domain fails
 $URI = 'Teams webhook URI'
-$Now = Get-Date
 $Minutes = '15'
+
+# Service(s) to monitor
+# Leave the one(s) you DON'T want to check empty (with '' ), add a value in the ones you WANT to check (I added 'yes' for readability
+
+$ExchangeOnline = 'yes'
+$MicrosoftForms = ''
+$MicrosoftKaizala = ''
+$SkypeforBusiness = ''
+$MicrosoftFlow = ''
+$FlowinMicrosoft365 = ''
+$MicrosoftTeams = 'yes'
+$MobileDeviceManagementforOffice365 = ''
+$OfficeClientApplications = ''
+$Officefortheweb = ''
+$OneDriveforBusiness = 'yes'
+$IdentityService = ''
+$Office365Portal = 'yes'
+$Planner = ''
+$PowerAppsinMicrosoft365 = ''
+$SharePointOnline = 'yes'
+$YammerEnterprise = ''
+
+# Classification(s) to monitor
+# Leave the one(s) you DON'T want to check empty (with '' ), add a value in the ones you WANT to check (I added 'yes' for readability)
+
+$Incident = 'yes'
+$Advisory = ''
+
+# Build the Services array            
+$ServicesArray = @()            
+            
+# If Services variables are present, add with 'eq' comparison            
+if($ExchangeOnline){$ServicesArray += '$_.WorkloadDisplayName -eq "Exchange Online"'}            
+if($MicrosoftForms){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Forms"'}
+if($MicrosoftKaizala){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Kaizala"'} 
+if($SkypeforBusiness){$ServicesArray += '$_.WorkloadDisplayName -eq "Skype for Business"'}
+if($MicrosoftFlow){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Flow"'}
+if($FlowinMicrosoft365){$ServicesArray += '$_.WorkloadDisplayName -eq "Flow in Microsoft 365"'}
+if($MicrosoftTeams){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Teams"'}
+if($MobileDeviceManagementforOffice365){$ServicesArray += '$_.WorkloadDisplayName -eq "Mobile Device Management for Office 365"'}
+if($OfficeClientApplications){$ServicesArray += '$_.WorkloadDisplayName -eq "Office Client Applications"'}
+if($Officefortheweb){$ServicesArray += '$_.WorkloadDisplayName -eq "Office for the web"'}
+if($OneDriveforBusiness){$ServicesArray += '$_.WorkloadDisplayName -eq "OneDrive for Business"'}
+if($IdentityService){$ServicesArray += '$_.WorkloadDisplayName -eq "Identity Service"'}
+if($Office365Portal){$ServicesArray += '$_.WorkloadDisplayName -eq "Office 365 Portal"'}
+if($Planner){$ServicesArray += '$_.WorkloadDisplayName -eq "Planner"'}
+if($PowerAppsinMicrosoft365){$ServicesArray += '$_.WorkloadDisplayName -eq "PowerApps in Microsoft 365"'}
+if($harepointOnline){$ServicesArray += '$_.WorkloadDisplayName -eq "Sharepoint Online"'}
+if($YammerEnterprise){$ServicesArray += '$_.WorkloadDisplayName -eq "Yammer Enterprise"'}
+
+# Build the Services where array into a string and joining each statement with -or     
+$ServicesString = $ServicesArray -Join " -or "
+
+# Build the Classification array            
+$ClassificationArray = @()            
+            
+# If Classification variables are present, add with 'eq' comparison            
+if($Incident){$ClassificationArray += '$_.Classification -eq "Incident"'}            
+if($Advisory){$ClassificationArray += '$_.Classification -eq "Advisory"'}            
+
+# Build the Classification where array into a string and joining each statement with -or            
+$ClassificationString = $ClassificationArray -Join " -or "
 
 # Request data
 $body = @{
@@ -49,7 +110,9 @@ $body = @{
 $oauth = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$($tenantdomain)/oauth2/token?api-version=1.0" -Body $body
 $headerParams = @{'Authorization'="$($oauth.token_type) $($oauth.access_token)"}
 $messages = (Invoke-RestMethod -Uri "https://manage.office.com/api/v1.0/$($tenantdomain)/ServiceComms/Messages" -Headers $headerParams -Method Get)
-$incidents = $messages.Value | Where-Object {$_.MessageType -eq 'Incident'}
+$incidents = $messages.Value | Where-Object ([scriptblock]::Create($ClassificationString)) | Where-Object ([scriptblock]::Create($ServicesString))
+
+$Now = Get-Date
 
 # Parse data
 ForEach ($inc in $incidents){
