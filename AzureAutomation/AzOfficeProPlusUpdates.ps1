@@ -33,8 +33,8 @@
 .NOTES
   Version:        1.7
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Jan 17th 2020
-  Purpose/Change: Updated regex to catch correct updates
+  Creation Date:  Jan 26th 2020
+  Purpose/Change: Will no longer be maintained, kept for legacy reasons
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
