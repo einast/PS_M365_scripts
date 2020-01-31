@@ -33,7 +33,7 @@ $Hours = '24'
 $Now = Get-Date
 
 # Request data
-$messages = (Invoke-RestMethod -Uri $Roadmap -Headers $headerParams -Method Get)
+$messages = Invoke-RestMethod -Uri $Roadmap
 
 # Parse data
 ForEach ($msg in $messages) {
