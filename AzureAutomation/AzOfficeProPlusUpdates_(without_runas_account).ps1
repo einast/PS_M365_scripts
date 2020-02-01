@@ -33,7 +33,7 @@
   $MaxPayloadSize = '18000' is the default value, as I had no success with a larger number
 
   # Custom message appended to truncated payload, adjust as you like
-  $Trunktext = "DUE TO TEAMS LIMITATIONS, CHANGELOG IS TRUNCATED. CLICK THE 'MORE INFO' LINK FOR ALL DETAILS!" Feel free to customize, I added some 
+  $Trunktext = "DUE TO TEAMS LIMITATIONS, CHANGELOG IS TRUNCATED. CLICK THE 'MORE INFO' LINK FOR ALL DETAILS!" # Feel free to customize, I added some 
   calculations in the script that add this text to the new payload, while keeping it under the limit set above
 
   Disclaimer: This script is offered "as-is" with no warranty. 
