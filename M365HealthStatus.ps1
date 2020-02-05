@@ -22,10 +22,10 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        2.1
+  Version:        2.2
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Jan 23rd 2020
-  Purpose/Change: Added option to filter services and classifications 
+  Creation Date:  Feb 5th 2020
+  Purpose/Change: Added more services
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
@@ -42,8 +42,10 @@ $Minutes = '15'
 
 $ExchangeOnline = 'yes'
 $MicrosoftForms = ''
+$MicrosoftIntune = ''
 $MicrosoftKaizala = ''
 $SkypeforBusiness = ''
+$MicrosoftDefenderATP = ''
 $MicrosoftFlow = ''
 $FlowinMicrosoft365 = ''
 $MicrosoftTeams = 'yes'
@@ -53,9 +55,14 @@ $Officefortheweb = ''
 $OneDriveforBusiness = 'yes'
 $IdentityService = ''
 $Office365Portal = 'yes'
+$OfficeSubscription = ''
 $Planner = ''
+$PowerApps = ''
 $PowerAppsinMicrosoft365 = ''
+$PowerBI = ''
+$AzureInformationProtection = ''
 $SharePointOnline = 'yes'
+$MicrosoftStaffHub = ''
 $YammerEnterprise = ''
 
 # Classification(s) to monitor
@@ -68,10 +75,12 @@ $Advisory = ''
 $ServicesArray = @()            
             
 # If Services variables are present, add with 'eq' comparison            
-if($ExchangeOnline){$ServicesArray += '$_.WorkloadDisplayName -eq "Exchange Online"'}            
+if($ExchangeOnline){$ServicesArray += '$_.WorkloadDisplayName -eq "Exchange Online"'}            
 if($MicrosoftForms){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Forms"'}
-if($MicrosoftKaizala){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Kaizala"'} 
+if($MicrosoftIntune){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Intune"'}
+if($MicrosoftKaizala){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Kaizala"'} 
 if($SkypeforBusiness){$ServicesArray += '$_.WorkloadDisplayName -eq "Skype for Business"'}
+if($MicrosoftDefenderATP){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Defender ATP"'}
 if($MicrosoftFlow){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Flow"'}
 if($FlowinMicrosoft365){$ServicesArray += '$_.WorkloadDisplayName -eq "Flow in Microsoft 365"'}
 if($MicrosoftTeams){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Teams"'}
@@ -81,9 +90,14 @@ if($Officefortheweb){$ServicesArray += '$_.WorkloadDisplayName -eq "Office for t
 if($OneDriveforBusiness){$ServicesArray += '$_.WorkloadDisplayName -eq "OneDrive for Business"'}
 if($IdentityService){$ServicesArray += '$_.WorkloadDisplayName -eq "Identity Service"'}
 if($Office365Portal){$ServicesArray += '$_.WorkloadDisplayName -eq "Office 365 Portal"'}
+if($OfficeSubscription){$ServicesArray += '$_.WorkloadDisplayName -eq "Office Subscription"'}
 if($Planner){$ServicesArray += '$_.WorkloadDisplayName -eq "Planner"'}
+if($PowerApps){$ServicesArray += '$_.WorkloadDisplayName -eq "PowerApps"'}
 if($PowerAppsinMicrosoft365){$ServicesArray += '$_.WorkloadDisplayName -eq "PowerApps in Microsoft 365"'}
-if($harepointOnline){$ServicesArray += '$_.WorkloadDisplayName -eq "Sharepoint Online"'}
+if($PowerBI){$ServicesArray += '$_.WorkloadDisplayName -eq "Power BI"'}
+if($AzureInformationProtection){$ServicesArray += '$_.WorkloadDisplayName -eq "Azure Information Protection"'}
+if($SharepointOnline){$ServicesArray += '$_.WorkloadDisplayName -eq "Sharepoint Online"'}
+if($MicrosoftStaffHub){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft StaffHub"'}
 if($YammerEnterprise){$ServicesArray += '$_.WorkloadDisplayName -eq "Yammer Enterprise"'}
 
 # Build the Services where array into a string and joining each statement with -or     
