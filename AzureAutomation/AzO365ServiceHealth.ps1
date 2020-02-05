@@ -174,7 +174,7 @@ $Payload =  @"
                     "os": "default",
                     "uri": "$($inc.PostIncidentDocumentUrl)"
                 }
-			]
+	    ]
         },        
     ],
     "sections": [
