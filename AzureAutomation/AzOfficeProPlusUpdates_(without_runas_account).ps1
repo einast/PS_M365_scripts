@@ -118,7 +118,7 @@ $monthlyDate = Get-Date $monthlyLastUpdated
 
     # Tailor the "More info" button by adding suffix to link to right section of the webpage
     $monthlylinkpattern = '(?<=\<h2.*?\")(.*?)(?=\"\>)'
-    $monthlylink = $Monthlyweb | Select-String -Pattern $monthlylinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -Index 1
+    $monthlylink = $Monthlyweb | Select-String -Pattern $monthlylinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
 
     # Select latest updates
     $monthlycontentpattern = '(\<h2 id="v.+?\>)(.|\n)*?(?=(\<h2 id="v.+?\>|<div class.+?\>))'
@@ -271,7 +271,7 @@ $sactDate = Get-Date $sactLastUpdated
 
     # Tailor the "More info" button by adding suffix to link to right section of the webpage
     $sactlinkpattern = '(?<=\<h2.*?\")(.*?)(?=\"\>)'
-    $sactlink = $sactweb | Select-String -Pattern $sactlinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -Index 1
+    $sactlink = $sactweb | Select-String -Pattern $sactlinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
 
     # Select latest updates
     $sactcontentpattern = '(\<h2 id="v.+?\>)(.|\n)*?(?=(\<h2 id="v.+?\>|<div class.+?\>))'
@@ -425,7 +425,7 @@ $SACDate = Get-Date $sacLastUpdated
 
     # Tailor the "More info" button by adding suffix to link to right section of the webpage
     $saclinkpattern = '(?<=\<h2.*?\")(.*?)(?=\"\>)'
-    $saclink = $SACweb | Select-String -Pattern $saclinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -Index 1
+    $saclink = $SACweb | Select-String -Pattern $saclinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
 
     # Select latest updates
     $saccontentpattern = '(\<h2 id="v.+?\>)(.|\n)*?(?=(\<h2 id="v.+?\>|<div class.+?\>))'
