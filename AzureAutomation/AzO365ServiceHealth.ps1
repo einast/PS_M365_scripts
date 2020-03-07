@@ -1,21 +1,11 @@
 <#
 .SYNOPSIS
-  Get Microsoft 365 Service health status and post to Teams using webhooks and Azure Automation
+  Get Microsoft 365 Service health status and post to Teams using webhooks
 .DESCRIPTION
-  Script to check Microsoft 365 Health status, configured to check last 15 minutes (can be adapted as required). Run as a scheduled task, Azure automation etc.
+  Script to check Microsoft 365 Health status, configured to check last 15 minutes (can be adapted as required). Run in Azure automation.
+  
   Create a webhook in Teams and copy the URI to the variable section below.
-
-  This version of the script is customized for Azure Automation. The purpose is to avoid sensitive data in clear text in the script. 
-  If you would like to schedule the script with something else, please look at the alternative script xxxxxxxxx.
-
-  Edit the variables within "User defined variables":
-  ---------------------------------------------------
-  $AzVariableApplicationIDName: The name of your Azure Automation variable containing the Application ID
-  $AzVariableApplicationKeyName: The name of your Azure Automation variable containing the Application Key (needs to be encrypted)
-  $AzVariableTenantDomainName: The name of your Azure Automation variable containing the tenant domain you want to use
-  $AzVariableTeamsURIName: The name of your Azure Automation variable containing the Teams URI
-  $Minutes: The period you want to check for new incidents and updates, in minutes. For example: 15 = last 15 minutes. Needs to align with your schedule.
-
+  
   The output will be color coded (can be adapted as required) according to Classification of the entry:
   
   Red = Incident
@@ -23,65 +13,111 @@
   Green = Resolved (Messages with a value in "End date")
   Replace the variables with your own where feasible
   
+  Add a value to the Services and Classifications you would like to be notified about (I used 'yes' for readability), leave the others empty.
+  
   Example doc for registering Azure application for credentials and permissions:
   https://evotec.xyz/preparing-azure-app-registrations-permissions-for-office-365-health-service/
-  
   Disclaimer: This script is offered "as-is" with no warranty. 
   While the script is tested and working in my environment, it is recommended that you test the script
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        1.0
+  Version:        2.3
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Nov 17th 2019
-  Purpose/Change: Rewritten for Azure Automation
+  Creation Date:  Feb 5th 2020
+  Purpose/Change: Added filtering options
 .LINK
-  https://github.com/einast/PS_M365_scripts/AzureAutomation
+  https://github.com/einast/PS_M365_scripts/blob/master/AzureAutomation/AzO365ServiceHealth.ps1
 #>
 
-# User defined variables
-# ----------------------
-$AzVariableApplicationIDName = 'AzApplicationID'
-$AzVariableApplicationKeyName = 'AzApplicationKey'
-$AzVariableTenantDomainName = 'AzTenantDomain'
-$AzVariableTeamsURIName = 'O365ServiceHealthTeamsURI'
-$Minutes = '60'
+# Adjust the values below as needed
 
-# Azure Automation specific
-# -------------------------
+# ------------------------------------- USER DEFINED VARIABLES -------------------------------------
 
-#Logging in to Azure with Automation account
-Import-Module AzureRM.Automation
+$ApplicationID = Get-AutomationVariable -Name 'AzO365ServiceHealthApplicationID'
+$ApplicationKey = Get-AutomationVariable -Name 'AzO365ServiceHealthApplicationKey'
+$TenantDomain = Get-AutomationVariable -Name 'AzO365TenantDomain'
+$URI = Get-AutomationVariable -Name 'AzO365TeamsURI'
+$Minutes = '15'
 
-$connectionName = "AzureRunAsConnection"
-try
-{
-    $servicePrincipalConnection = Get-AutomationConnection -Name $connectionName      
-    $account = Add-AzureRmAccount `
-        -ServicePrincipal `
-        -TenantId $servicePrincipalConnection.TenantId `
-        -ApplicationId $servicePrincipalConnection.ApplicationId `
-        -CertificateThumbprint $servicePrincipalConnection.CertificateThumbprint 
-}
-catch {
-    if (!$servicePrincipalConnection)
-    {
-        $ErrorMessage = "Connection $connectionName not found."
-        throw $ErrorMessage
-    } else{
-        Write-Error -Message $_.Exception
-        throw $_.Exception
-    }
-}
+# Service(s) to monitor
+# Leave the one(s) you DON'T want to check empty (with '' ), add a value in the ones you WANT to check (I added 'yes' for readability
 
-# Read the values from Azure Automation variables and add to script variables
-$Tenantdomain = Get-AutomationVariable -Name $AzVariableTenantDomainName
-$ApplicationID = Get-AutomationVariable -Name $AzVariableApplicationIDName
-$ApplicationKey = Get-AutomationVariable -Name $AzVariableApplicationKeyName
-$URI = Get-AutomationVariable -Name $AzVariableTeamsURIName
+$ExchangeOnline = 'yes'
+$MicrosoftForms = ''
+$MicrosoftIntune = ''
+$MicrosoftKaizala = ''
+$SkypeforBusiness = ''
+$MicrosoftDefenderATP = ''
+$MicrosoftFlow = ''
+$FlowinMicrosoft365 = ''
+$MicrosoftTeams = 'yes'
+$MobileDeviceManagementforOffice365 = ''
+$OfficeClientApplications = ''
+$Officefortheweb = ''
+$OneDriveforBusiness = 'yes'
+$IdentityService = ''
+$Office365Portal = 'yes'
+$OfficeSubscription = ''
+$Planner = ''
+$PowerApps = ''
+$PowerAppsinMicrosoft365 = ''
+$PowerBI = ''
+$AzureInformationProtection = ''
+$SharePointOnline = 'yes'
+$MicrosoftStaffHub = ''
+$YammerEnterprise = ''
 
-# Get current date and time
-$Now = Get-Date
+# Classification(s) to monitor
+# Leave the one(s) you DON'T want to check empty (with '' ), add a value in the ones you WANT to check (I added 'yes' for readability)
+
+$Incident = 'yes'
+$Advisory = ''
+
+
+# ------------------------------------- END OF USER DEFINED VARIABLES -------------------------------------
+
+# Build the Services array            
+$ServicesArray = @()            
+            
+# If Services variables are present, add with 'eq' comparison            
+if($ExchangeOnline){$ServicesArray += '$_.WorkloadDisplayName -eq "Exchange Online"'}            
+if($MicrosoftForms){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Forms"'}
+if($MicrosoftIntune){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Intune"'}
+if($MicrosoftKaizala){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Kaizala"'} 
+if($SkypeforBusiness){$ServicesArray += '$_.WorkloadDisplayName -eq "Skype for Business"'}
+if($MicrosoftDefenderATP){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Defender ATP"'}
+if($MicrosoftFlow){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Flow"'}
+if($FlowinMicrosoft365){$ServicesArray += '$_.WorkloadDisplayName -eq "Flow in Microsoft 365"'}
+if($MicrosoftTeams){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Teams"'}
+if($MobileDeviceManagementforOffice365){$ServicesArray += '$_.WorkloadDisplayName -eq "Mobile Device Management for Office 365"'}
+if($OfficeClientApplications){$ServicesArray += '$_.WorkloadDisplayName -eq "Office Client Applications"'}
+if($Officefortheweb){$ServicesArray += '$_.WorkloadDisplayName -eq "Office for the web"'}
+if($OneDriveforBusiness){$ServicesArray += '$_.WorkloadDisplayName -eq "OneDrive for Business"'}
+if($IdentityService){$ServicesArray += '$_.WorkloadDisplayName -eq "Identity Service"'}
+if($Office365Portal){$ServicesArray += '$_.WorkloadDisplayName -eq "Office 365 Portal"'}
+if($OfficeSubscription){$ServicesArray += '$_.WorkloadDisplayName -eq "Office Subscription"'}
+if($Planner){$ServicesArray += '$_.WorkloadDisplayName -eq "Planner"'}
+if($PowerApps){$ServicesArray += '$_.WorkloadDisplayName -eq "PowerApps"'}
+if($PowerAppsinMicrosoft365){$ServicesArray += '$_.WorkloadDisplayName -eq "PowerApps in Microsoft 365"'}
+if($PowerBI){$ServicesArray += '$_.WorkloadDisplayName -eq "Power BI"'}
+if($AzureInformationProtection){$ServicesArray += '$_.WorkloadDisplayName -eq "Azure Information Protection"'}
+if($SharepointOnline){$ServicesArray += '$_.WorkloadDisplayName -eq "Sharepoint Online"'}
+if($MicrosoftStaffHub){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft StaffHub"'}
+if($YammerEnterprise){$ServicesArray += '$_.WorkloadDisplayName -eq "Yammer Enterprise"'}
+
+# Build the Services where array into a string and joining each statement with -or     
+$ServicesString = $ServicesArray -Join " -or "
+
+# Build the Classification array            
+$ClassificationArray = @()            
+            
+# If Classification variables are present, add with 'eq' comparison            
+if($Incident){$ClassificationArray += '$_.Classification -eq "Incident"'}            
+if($Advisory){$ClassificationArray += '$_.Classification -eq "Advisory"'}            
+
+# Build the Classification where array into a string and joining each statement with -or            
+$ClassificationString = $ClassificationArray -Join " -or "
 
 # Request data
 $body = @{
@@ -94,14 +130,13 @@ $body = @{
 $oauth = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$($tenantdomain)/oauth2/token?api-version=1.0" -Body $body
 $headerParams = @{'Authorization'="$($oauth.token_type) $($oauth.access_token)"}
 $messages = (Invoke-RestMethod -Uri "https://manage.office.com/api/v1.0/$($tenantdomain)/ServiceComms/Messages" -Headers $headerParams -Method Get)
-$incidents = $messages.Value | Where-Object {$_.MessageType -eq 'Incident'}
+$incidents = $messages.Value | Where-Object ([scriptblock]::Create($ClassificationString)) | Where-Object ([scriptblock]::Create($ServicesString))
+
+$Now = Get-Date
 
 # Parse data
 ForEach ($inc in $incidents){
-                
-                # Add updates posted last $Minutes
-                If (($Now - [datetime]$inc.LastUpdatedTime).TotalMinutes -le $Minutes) {
-                
+                  
                 # Set the color line of the card according to the Classification of the event, or if it has ended
                 if ($inc.Classification -eq "Incident" -and $inc.EndTime -eq $null)
                 {
@@ -118,6 +153,9 @@ ForEach ($inc in $incidents){
                             $color = "ffff00" # Yellow
                             }
                         }
+                             
+# Add updates posted last $Minutes
+If (($Now - [datetime]$inc.LastUpdatedTime).TotalMinutes -le $Minutes) {
 
 # Pick latest message in the message index and convert the text to JSON before generating payload (if not it will fail).
 $Message = $inc.Messages.MessageText[$inc.Messages.Count-1] | ConvertTo-Json
@@ -130,14 +168,14 @@ $Payload =  @"
     "potentialAction": [
             {
             "@type": "OpenUri",
-            "name": "Post INC Report",
+            "name": "Post INC report",
             "targets": [
                 {
                     "os": "default",
                     "uri": "$($inc.PostIncidentDocumentUrl)"
                 }
-            ]
-        },           
+	    ]
+        },        
     ],
     "sections": [
         {
@@ -170,5 +208,5 @@ $Payload =  @"
 
 # If any new posts, add to Teams
 Invoke-RestMethod -uri $uri -Method Post -body $Payload -ContentType 'application/json; charset=utf-8'
-    }
   }
+}

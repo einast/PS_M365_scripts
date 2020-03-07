@@ -11,10 +11,10 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        1.1
+  Version:        1.7
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Nov 12th 2019
-  Purpose/Change: Fixed typo, added article suffix to link button
+  Creation Date:  Jan 17th 2020
+  Purpose/Change: Updated regex to catch correct updates
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
@@ -57,15 +57,15 @@ $monthlyDate = Get-Date $monthlyLastUpdated
 	If (([datetime]$Now - [datetime]$monthlyDate).TotalHours -le $Hours) {
 
     # Picking out title
-    $monthlytitlepattern = '(?<=\<h2.*?\>)(.*?)(?=<\/h2\>)'
+    $monthlytitlepattern = '(?<=\<h2 id="v.*?\>)(.*?)(?=<\/h2\>)'
     $monthlytitle = $Monthlyweb | select-string  -Pattern $monthlytitlepattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
 
     # Tailor the "More info" button by adding suffix to link to right section of the webpage
     $monthlylinkpattern = '(?<=\<h2.*?\")(.*?)(?=\"\>)'
-    $monthlylink = $Monthlyweb | Select-String -Pattern $monthlylinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+    $monthlylink = $Monthlyweb | Select-String -Pattern $monthlylinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -Index 1
 
     # Select latest updates
-    $monthlycontentpattern = '(\<h2.+?\>)((.|\n)+?(?=<h2.+?\>))'
+    $monthlycontentpattern = '(\<h2 id="v.+?\>)(.|\n)*?(?=(\<h2 id="v.+?\>|<div class.+?\>))'
     $monthlyupdate = $Monthlyweb | select-string  -Pattern $monthlycontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
     $monthlycontent = $monthlyupdate | ConvertTo-Json
 
@@ -132,16 +132,16 @@ $SACTDate = Get-Date $sactLastUpdated
 	If (([datetime]$Now - [datetime]$SACTDate).TotalHours -le $Hours) {
 
     # Picking out title
-    $sacttitlepattern = '(?<=\<h2.*?\>)(.*?)(?=<\/h2\>)'
-    $sacttitle = $SACTweb | select-string  -Pattern $sacttitlepattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+    $sacttitlepattern = '(?<=\<h2 id="v.*?\>)(.*?)(?=<\/h2\>)'
+    $sacttitle = $sactweb | select-string  -Pattern $sacttitlepattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
 
     # Tailor the "More info" button by adding suffix to link to right section of the webpage
     $sactlinkpattern = '(?<=\<h2.*?\")(.*?)(?=\"\>)'
-    $sactlink = $SACTweb | Select-String -Pattern $sactlinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+    $sactlink = $sactweb | Select-String -Pattern $sactlinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -Index 1
 
     # Select latest updates
-    $sactcontentpattern = '(\<h2.+?\>)((.|\n)+?(?=<h2.+?\>))'
-    $sactupdate = $SACTweb | select-string  -Pattern $sactcontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+    $sactcontentpattern = '(\<h2 id="v.+?\>)(.|\n)*?(?=(\<h2 id="v.+?\>|<div class.+?\>))'
+    $sactupdate = $sactweb | select-string  -Pattern $sactcontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
     $sactcontent = $sactupdate | ConvertTo-Json
 
 #Generate payload
@@ -207,15 +207,15 @@ $SACDate = Get-Date $sacLastUpdated
 	If (([datetime]$Now - [datetime]$SACDate).TotalHours -le $Hours) {
 
     # Picking out title
-    $sactitlepattern = '(?<=\<h2.*?\>)(.*?)(?=<\/h2\>)'
+    $sactitlepattern = '(?<=\<h2 id="v.*?\>)(.*?)(?=<\/h2\>)'
     $sactitle = $SACweb | select-string  -Pattern $sactitlepattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
 
     # Tailor the "More info" button by adding suffix to link to right section of the webpage
     $saclinkpattern = '(?<=\<h2.*?\")(.*?)(?=\"\>)'
-    $saclink = $SACweb | Select-String -Pattern $saclinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+    $saclink = $SACweb | Select-String -Pattern $saclinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -Index 1
 
     # Select latest updates
-    $saccontentpattern = '(\<h2.+?\>)((.|\n)+?(?=<h2.+?\>))'
+    $saccontentpattern = '(\<h2 id="v.+?\>)(.|\n)*?(?=(\<h2 id="v.+?\>|<div class.+?\>))'
     $sacupdate = $SACweb | select-string  -Pattern $saccontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
     $saccontent = $sacupdate | ConvertTo-Json
 
