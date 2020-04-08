@@ -15,6 +15,9 @@
   
   Add a value to the Services and Classifications you would like to be notified about (I used 'yes' for readability), leave the others empty.
   
+  Pushover notification is possible, enabled by default. Comment out the entire section if you don't want to user
+  Pushover.
+
   Example doc for registering Azure application for credentials and permissions:
   https://evotec.xyz/preparing-azure-app-registrations-permissions-for-office-365-health-service/
   Disclaimer: This script is offered "as-is" with no warranty. 
@@ -22,10 +25,10 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        2.3
+  Version:        2.4
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Feb 5th 2020
-  Purpose/Change: Added filtering options
+  Creation Date:  Apr 8th 2020
+  Purpose/Change: Added Pushover option
 .LINK
   https://github.com/einast/PS_M365_scripts/blob/master/AzureAutomation/AzO365ServiceHealth.ps1
 #>
@@ -40,8 +43,17 @@ $TenantDomain = Get-AutomationVariable -Name 'AzO365TenantDomain'
 $URI = Get-AutomationVariable -Name 'AzO365TeamsURI'
 $Minutes = '15'
 
+# Pushover notifications in case Teams is down.
+# Due to limitations and readability, the script will only send the title of the incident/advisory to Pushover. 
+# COMMENT OUT THIS SECTION IF YOU DON'T WANT TO USE PUSHOVER!
+
+$Pushover = 'yes' # Comment out if you don't want to use Pushover. I use 'yes' for readability.
+$PushoverToken = Get-AutomationVariable -Name 'AzO365PushoverToken' # Your API token. Comment out if you don't want to use Pushover
+$PushoverUser = Get-AutomationVariable -Name 'AzO365PushoverUser' # User/Group token. Comment out if you don't want to use Pushover
+$PushoverURI = 'https://api.pushover.net/1/messages.json' # DO NOT CHANGE! Default Pushover URI. Comment out if you don't want to use Pushover
+
 # Service(s) to monitor
-# Leave the one(s) you DON'T want to check empty (with '' ), add a value in the ones you WANT to check (I added 'yes' for readability
+# Leave the one(s) you DON'T want to check empty (with '' ), add a value in the ones you WANT to check (I added 'yes' for readability)
 
 $ExchangeOnline = 'yes'
 $MicrosoftForms = ''
@@ -72,8 +84,7 @@ $YammerEnterprise = ''
 # Leave the one(s) you DON'T want to check empty (with '' ), add a value in the ones you WANT to check (I added 'yes' for readability)
 
 $Incident = 'yes'
-$Advisory = ''
-
+$Advisory = 'yes'
 
 # ------------------------------------- END OF USER DEFINED VARIABLES -------------------------------------
 
@@ -208,5 +219,15 @@ $Payload =  @"
 
 # If any new posts, add to Teams
 Invoke-RestMethod -uri $uri -Method Post -body $Payload -ContentType 'application/json; charset=utf-8'
+
+# If Pushover alerts are enabled, send to Pushover
+if($Pushover){
+$POparameters = @{
+  token = $PushoverToken
+  user = $PushoverUser
+  message = "$($Inc.Id) - $($Inc.Title) `n`n$($inc.Messages.MessageText[$inc.Messages.Count-1])"
+}
+$POparameters | Invoke-RestMethod -Uri $PushoverUri -Method Post
+}
   }
 }
