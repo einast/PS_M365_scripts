@@ -2,7 +2,7 @@
 .SYNOPSIS
   Offboard Microsoft 365 users
 .DESCRIPTION
-  This script was created to offboard a large amount of users simultanously 
+  This script was created to offboard a large amount of users simultaneously 
   using a CSV file for a specific customer case.
   
   The script will:
