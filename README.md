@@ -2,6 +2,7 @@
 
 - Scripts for posting updates from Microsoft Message Center (both incidents and announcements), updates from the Office 365 roadmap, and more, to Teams via webhooks.
 - Azure Automation adapted scripts are in the AzureAutomation folder
+- Other scripts I find useful
 
 For more detailed information, check out my [blog](https://thingsinthe.cloud).
 
