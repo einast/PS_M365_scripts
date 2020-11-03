@@ -33,8 +33,8 @@
 .NOTES
   Version:        0.9
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Nov 1st 2020
-  Purpose/Change: Initial version
+  Creation Date:  Nov 3rd 2020
+  Purpose/Change: Minor edits
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
