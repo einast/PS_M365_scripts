@@ -86,6 +86,10 @@ foreach ($user in $users) {
     # Convert mailbox to shared mailbox
     Set-Mailbox $user.'internal.email' -Type “Shared” 
 
+    # Set mailbox auto-reply message
+    Set-MailboxAutoReplyConfiguration -Identity $user.'internal.email' -AutoReplyState Enabled -InternalMessage "The user no longer work here, please use $($user.'external.email')" -ExternalMessage "The user no longer work here, please use $($user.'external.email')"
+    Write-Host "$($user.'internal.email') automatic reply is set"
+
     # Check if user has populated external.email field, if so, create a new mail contact
     if ($user.'external.email') {
         New-MailContact -Name $user.'Name' -ExternalEmailAddress $user.'external.email' | Out-Null
