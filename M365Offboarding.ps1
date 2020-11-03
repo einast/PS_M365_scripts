@@ -11,6 +11,7 @@
   -Cancel meetings organized by the user
   -Remove user from distribution list
   -Convert the user mailbox to a shared mailbox
+  -Set auto-reply for the mailbox
   -Check if the CSV has defined an external email for the user, if so, create a contact object
   -Remove all assigned Microsoft 365 licenses
 
