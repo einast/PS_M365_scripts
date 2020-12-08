@@ -150,7 +150,7 @@ foreach ($user in $users) {
   if (!$DynamicLicenseGroup)
   {
   # This part removes licenses. If you use dynamic groups for licensing, we need to remove the user from that group, if not, manual removal will fail.
-  # Remove assigned Microsoft 365 licenses
+  # Remove user assigned Microsoft 365 licenses
   $licenses = Get-AzureADUser -ObjectId $AADuser.ObjectId | select AssignedLicenses
   $licenses.AssignedLicenses.skuID | foreach { 
                   $body = @{
@@ -160,7 +160,7 @@ foreach ($user in $users) {
       Set-AzureADUserLicense -ObjectId $AADuser.ObjectId -AssignedLicenses $body }
   }
   else {
-  # Remove licenses manually from each user
+  # Remove licenses by removing user from dynamic license group
   Remove-MsolGroupMember -GroupObjectId $DynamicLicenseGroup -GroupMemberType User -GroupmemberObjectId $AADUserObjectId
   Write-Host "$($user.internalemail) Office365 licenses removed"
   }
