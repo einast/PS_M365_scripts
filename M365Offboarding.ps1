@@ -3,7 +3,10 @@
   Offboard Microsoft 365 users
 .DESCRIPTION
   This script was created to offboard a large amount of users simultaneously 
-  using a CSV file for a specific customer case.
+  using a CSV file for a customer.
+
+  PLEASE NOTE: It should be reviewed and adapted as needed, as it served a specific use case. But it might
+  serve as a starting point for your own cases.
   
   The script will:
   -Block new sign-ins
@@ -11,7 +14,7 @@
   -Remove user from distribution list
   -Convert the user mailbox to a shared mailbox
   -Prefix the shared mailbox for easier readability (like Quit - Roy Rogers)
-  -Set additional SMTP addresses
+  -Set SMTP addresses, ADAPT AS NEEDED
   -Set auto-reply for the mailbox
   -Check if the CSV has defined an external email for the user, if so, create a contact object
   -Remove all assigned Microsoft 365 licenses
@@ -19,10 +22,12 @@
   The script will output the result to the console, comment/remove the Write-Host lines if required.
 
   Usage: Populate a CSV file with 2 columns, for example (remember to keep the header names identical to the ones below):
+  Leave externalemail column blank for users (or all) if you don't want to set up contact objects.
 
   internal.email,external.email
-  roy.rogers@acmeinc.com,royr@gmail.com
-  ola.nordmann@acmeinc.com,olanord@hotmail.com
+  roy.rogers@acmeinc.com,royr@gmaail.com
+  ola.nordmann@acmeinc.com,
+  john.johnson@acmeinc,jj@gmaail.com
 
   Requirements: Powershell modules MSOnline and ExchangeOnlineManagement
 
@@ -44,7 +49,7 @@
 ####################################################### User defined variables #######################################################
 
 $CSVfile = 'C:\Temp\test3.csv'                # Set the path to your CSV file
-$AutoReplyMessage = "HI and thanks for your email,<br><br>The person you are trying to reach is no longer working here. For further information, please contact our customer care at help@acme.com<br><br>Best regards<br>
+$AutoReplyMessage = "Hi and thanks for your email,<br><br>The person you are trying to reach is no longer working here. For further information, please contact our customer care at help@acme.com<br><br>Best regards<br>
 <b>Acme Inc</b>"                              # Auto-reply message, use HTML tags for richer text
 $CustomerDomain = '@acmeinc.com'              # For setting new SMTP addresses
 $SharedMbxPrefix = 'Quit - '                  # What to prefix the shared mailbox name with, for easier readability         
