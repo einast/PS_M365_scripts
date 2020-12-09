@@ -40,7 +40,7 @@
 .NOTES
   Version:        0.9
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Dec 8th 3rd 2020
+  Creation Date:  Dec 8th 2020
   Purpose/Change: Changes after testing further
 .LINK
   https://github.com/einast/PS_M365_scripts
