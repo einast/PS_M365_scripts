@@ -4,7 +4,7 @@
 - Azure Automation adapted scripts are in the AzureAutomation folder
 - Other scripts I find useful
 
-For more detailed information, check out my [blog](https://thingsinthe.cloud)
+For more detailed information, check out my [blog](https://thingsinthe.cloud).
 
 [![alt text][1.1]][1]
 
