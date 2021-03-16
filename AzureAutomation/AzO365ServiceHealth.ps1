@@ -25,10 +25,10 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        2.4
+  Version:        2.5
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Apr 8th 2020
-  Purpose/Change: Added Pushover option
+  Creation Date:  March 16th 2021
+  Purpose/Change: Added more services
 .LINK
   https://github.com/einast/PS_M365_scripts/blob/master/AzureAutomation/AzO365ServiceHealth.ps1
 #>
@@ -79,6 +79,7 @@ $AzureInformationProtection = ''
 $SharePointOnline = 'yes'
 $MicrosoftStaffHub = ''
 $YammerEnterprise = ''
+$Microsoft365Suite = ''
 
 # Classification(s) to monitor
 # Leave the one(s) you DON'T want to check empty (with '' ), add a value in the ones you WANT to check (I added 'yes' for readability)
@@ -116,6 +117,7 @@ if($AzureInformationProtection){$ServicesArray += '$_.WorkloadDisplayName -eq "A
 if($SharepointOnline){$ServicesArray += '$_.WorkloadDisplayName -eq "Sharepoint Online"'}
 if($MicrosoftStaffHub){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft StaffHub"'}
 if($YammerEnterprise){$ServicesArray += '$_.WorkloadDisplayName -eq "Yammer Enterprise"'}
+if($Microsoft365Suite){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft 365 Suite"'}
 
 # Build the Services where array into a string and joining each statement with -or     
 $ServicesString = $ServicesArray -Join " -or "
