@@ -41,6 +41,7 @@ $auoptions = "3"
 	4: Automatically download and scheduled installation.
 	#>
 
+# Start script, prompt for which computer group to add the computer to
 $title = "Add computer to WSUS server"
 $message = "Which WSUS group do you want to add this computer to?"
 
