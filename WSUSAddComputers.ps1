@@ -31,8 +31,8 @@
 # User defined parameters
 $pilotdeploy = "1. Pilot deployment"
 $broaddeploy = "2. Broad deployment"
-$wsusserver = "http://wsus.server:8530"
-$wsusstatusserver = "http://wsus.server:8530"
+$wsusserver = "http://wsus.server:8531" # http/https 8530/8531
+$wsusstatusserver = "http://wsus.server:8531" # http/https 8530/8531
 $auoptions = "3" 
 	<# AU options:
 	1: Keep my computer up to date is disabled in Automatic Updates.
