@@ -40,6 +40,7 @@ $auoptions = "3"
 	3: Automatically download and notify of installation.
 	4: Automatically download and scheduled installation.
 	#>
+$taskUser = 'NT AUTHORITY\SYSTEM' # User to run scheduled task with
 
 # Start script, prompt for which computer group to add the computer to
 $title = "Add computer to WSUS server"
@@ -126,6 +127,7 @@ Update-MpSignature -UpdateSource MicrosoftUpdateServer'
         -TaskName $taskName `
         -Action $taskAction `
         -Trigger $taskTrigger `
+	-User $taskUser `
         -Description $description
 
 # Try to force the computer to check in to the WSUS server (credit to https://pleasework.robbievance.net/howto-force-really-wsus-clients-to-check-in-on-demand/)
