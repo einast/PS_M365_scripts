@@ -300,7 +300,7 @@ $MonthlyPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-channel#$($monthlylink)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-enterprise-channel#$($monthlylink)"
                 }
             ]
         },
@@ -359,7 +359,7 @@ $MonthlyNewPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-channel#$($monthlylink)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-enterprise-channel#$($monthlylink)"
                 }
             ]
         },
@@ -451,7 +451,7 @@ $SACPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel#$($saclink)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-enterprise-channel#$($saclink)"
                 }
             ]
         },
@@ -511,7 +511,7 @@ $sacNewPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel#$($saclink)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-enterprise-channel#$($saclink)"
                 }
             ]
         },
