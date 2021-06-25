@@ -9,22 +9,27 @@
   Create one or more webhook in Teams (if you want to split the updates into separate channels) and copy the URI(s) to the user variable section below.
   The output is color coded (can be adapted as required). Default is green.
   Script for usage without Runas account in Azure Automation. You need to manually create the variable assets before running the script:
+  $AzAutomationCurrentVariable
   $AzAutomationMonthlyVariable
-  $AzAutomationSACTVariable
+  $AzAutomationSACPVariable
   $AzAutomationSACVariable
   
+  # Current channel 
+  $AzAutomationURICurrentVariable = The Azure Automation variable asset you stored your Current Teams URI in (https://) Comment out to not check
+  $AzAutomationCurrentVariable = Name of Azure Automation variable asset containing your last successful Current payload.
+
   # Monthly channel 
   $AzAutomationURIMonthlyVariable = The Azure Automation variable asset you stored your Monthly Teams URI in (https://) Comment out to not check
   $AzAutomationMonthlyVariable = Name of Azure Automation variable asset containing your last successful Monthly payload.
-  
-  # SACT channel
-  $AzAutomationURISactVariable = The Azure Automation variable asset you stored your SACT Teams URI in (https://) Comment out to not check
-  $AzAutomationSACTVariable = Name of Azure Automation variable asset containing your last successful SACT payload.
   
   # SAC channel
   $AzAutomationURISacVariable = The Azure Automation variable asset you stored your SAC Teams URI in (https://) Comment out to not check
   $AzAutomationSACVariable = Name of Azure Automation variable asset containing your last successful SAC payload.
   
+  # SAC Preview channel
+  $AzAutomationURISacpVariable = The Azure Automation variable asset you stored your SAC Preview Teams URI in (https://) Comment out to not check
+  $AzAutomationSACPVariable = Name of Azure Automation variable asset containing your last successful SAC Preview payload.
+
   # Generic variables
   $Hours = Last number of hours to check for updates. Align with schedule. Default set to 12 hours
   $Color = Set to green as default
@@ -41,10 +46,10 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        1.8
+  Version:        1.9
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Jan 20th 2020
-  Purpose/Change: Added logic to check payload size due to Microsoft limits
+  Creation Date:  Jun 25th 2021
+  Purpose/Change: Changes to reflect Microsoft's changes to releases and URLs
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
@@ -54,17 +59,21 @@
 # If you want to check Monthly Channel, Semi-Annual Channel Targeted (SACT) and/or Semi-Annual Channel, add your Teams URI in the variables fields. 
 # Comment out the ones you don't want to check.
 
+# Current channel 
+$AzAutomationURICurrentVariable = 'AzCurrentURI' # Comment out to _not_ check this channel
+$AzAutomationPayloadCurrentVariable = 'CurrentPayloadAZ' # Will be created by the script if not existing
+
 # Monthly channel 
 $AzAutomationURIMonthlyVariable = 'AzMonthlyURI' # Comment out to _not_ check this channel
 $AzAutomationPayloadMonthlyVariable = 'MonthlyPayloadAZ' # Will be created by the script if not existing
 
-# SACT channel
-$AzAutomationURISactVariable = 'AzSactURI' # Comment out to _not_ check this channel
-$AzAutomationPayloadSACTVariable = 'SACTPayloadAZ' # Will be created by the script if not existing
-
 # SAC channel
 $AzAutomationURISacVariable = 'AzSacURI' # Comment out to _not_ check this channel
 $AzAutomationPayloadSACVariable = 'SACPayloadAZ' # Will be created by the script if not existing
+
+# SAC Preview channel
+$AzAutomationURISacpVariable = 'AzSacpURI' # Comment out to _not_ check this channel
+$AzAutomationPayloadSACPVariable = 'SACPPayloadAZ' # Will be created by the script if not existing
 
 # Generic variables
 $Hours = '12' # Set the time window to check for updates, align with your schedules
@@ -81,14 +90,167 @@ $Trunktext = "DUE TO TEAMS LIMITATIONS, CHANGELOG IS TRUNCATED. CLICK THE 'MORE 
 # Setting other script variables
 $Now = Get-Date -Format 'yyyy-MM-dd HH:mm'
 $Year = Get-Date -Format yyyy
-$Monthly = 'https://docs.microsoft.com/en-us/officeupdates/monthly-channel-' +$Year
-$SAC = 'https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel-' +$Year
-$SACT = 'https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel-targeted-' +$Year
+$Current = 'https://docs.microsoft.com/en-us/officeupdates/current-channel'
+$Monthly = 'https://docs.microsoft.com/en-us/officeupdates/monthly-enterprise-channel'
+$SAC = 'https://docs.microsoft.com/en-us/officeupdates/semi-annual-enterprise-channel'
+$SACP = 'https://docs.microsoft.com/en-us/officeupdates/semi-annual-enterprise-channel-preview'
 $Trunkprefix = "...<br><br><b>"
 $TrunkAppend = $Trunkprefix + $Trunktext
 
 # Looking for new updates
 # ---------------------
+
+# Current channel
+# ---------------
+
+# Check if channel is set for checking, if so, do stuff
+If ($AzAutomationURICurrentVariable) {
+    $CurrentURI = Get-AutomationVariable -Name $AzAutomationURICurrentVariable
+    
+    #Get data
+    $Currentweb = Invoke-RestMethod -Uri $Current
+    
+    # Find article's last updated time
+    $currentdatepattern = '\d{4}-\d{2}-\d{2} \d{2}:\d{2} [AP]M'
+    $currentLastUpdated = $currentweb | select-string  -Pattern $currentdatepattern -AllMatches | % { $_.Matches } | % { $_.Value }
+    
+    # Convert match into Date/Time
+    $currentDate = Get-Date $currentLastUpdated
+    
+    # Check if updates are newer than time variable, if so, do stuff
+                                 
+        # Calculate time difference
+        If (([datetime]$Now - [datetime]$currentDate).TotalHours -le $Hours) {
+    
+        # Picking out title
+        $currenttitlepattern = '(?<=\<h2 id="v.*?\>)(.*?)(?=<\/h2\>)'
+        $currenttitle = $currentweb | select-string  -Pattern $currenttitlepattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+    
+        # Tailor the "More info" button by adding suffix to link to right section of the webpage
+        $currentlinkpattern = '(?<=\<h2.*?\")(.*?)(?=\"\>)'
+        $currentlink = $currentweb | Select-String -Pattern $currentlinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+    
+        # Select latest updates
+        $currentcontentpattern = '(\<h2 id="v.+?\>)(.|\n)*?(?=(\<h2 id="v.+?\>|<div class.+?\>))'
+        $currentupdate = $currentweb | select-string  -Pattern $currentcontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+        $currentcontent = $currentupdate | ConvertTo-Json
+    
+    #Generate payload
+              
+    $CurrentPayload =  @"
+    {
+        "@context": "https://schema.org/extensions",
+        "@type": "MessageCard",
+        "potentialAction": [
+                {
+                "@type": "OpenUri",
+                "name": "More info",
+                "targets": [
+                    {
+                        "os": "default",
+                        "uri": "https://docs.microsoft.com/en-us/officeupdates/current-channel#$($currentlink)"
+                    }
+                ]
+            },
+         ],
+        "sections": [
+            {
+                "facts": [
+                    {
+                        "name": "Version updated:",
+                        "value": "$($currentDate)"
+                    }
+                    
+                ],
+                "text": $currentcontent
+            }
+        ],
+        "summary": "O365 ProPlus Current",
+        "themeColor": "$($color)",
+        "title": "Current Channel release: $($currenttitle)"
+    }
+"@
+    
+    # If any new posts, add to Teams. If new content matches content of previous payload, do not post
+    $currentPayloadAZ = Get-AutomationVariable $AzAutomationPayloadCurrentVariable
+    
+    # First check if Payload is over 18K (Microsoft Teams limit)
+    
+    if ($CurrentPayload.Length -gt $MaxPayloadSize) {  
+    
+        # Find payload + append text total length
+        $CurrentTotalLength = $currentPayload.Length + $TrunkAppend.Length
+    
+        # Find the overshooting value
+        $CurrentPayloadOverSize = ($MaxPayloadSize - $CurrentTotalLength)
+    
+        # At what point in the original Payload content do we have to split the JSON
+        $CurrentPayloadSplitValue = $CurrentContent.Length - (-$CurrentPayloadOverSize)
+    
+        # Split the JSON into a new Payload
+        $CurrentNewSplitContent = $currentupdate.Substring(0,$currentPayloadSplitValue)
+        
+        # Create new truncated payload
+        $CurrentNewContent = $CurrentNewSplitContent + $TrunkAppend 
+        $CurrentNewPayloadContent = ConvertTo-Json $CurrentNewContent
+        
+    #Generate truncated payload
+              
+    $CurrentNewPayload =  @"
+    {
+        "@context": "https://schema.org/extensions",
+        "@type": "MessageCard",
+        "potentialAction": [
+                {
+                "@type": "OpenUri",
+                "name": "More info",
+                "targets": [
+                    {
+                        "os": "default",
+                        "uri": "https://docs.microsoft.com/en-us/officeupdates/current-channel#$($currentlink)"
+                    }
+                ]
+            },
+         ],
+        "sections": [
+            {
+                "facts": [
+                    {
+                        "name": "Version updated:",
+                        "value": "$($currentDate)"
+                    }
+                    
+                ],
+                "text": $CurrentNewPayloadContent
+            }
+        ],
+        "summary": "O365 ProPlus Current",
+        "themeColor": "$($color)",
+        "title": "Current Channel release: $($currenttitle)"
+}
+"@
+    
+    If ($currentcontent -ne $currentPayloadAZ) {
+    Invoke-RestMethod -uri $CurrentURI -Method Post -body $CurrentNewPayload -ContentType 'application/json; charset=utf-8'
+    Set-AutomationVariable -Name $AzAutomationPayloadCurrentVariable -Value ($currentcontent -as [string])
+          }
+        Else {
+        }
+        
+        }
+    Else {
+        If ($currentcontent -ne $CurrentPayloadAZ) {
+        Invoke-RestMethod -uri $CurrentURI -Method Post -body $CurrentPayload -ContentType 'application/json; charset=utf-8'
+        Set-AutomationVariable -Name $AzAutomationPayloadCurrentVariable -Value ($currentcontent -as [string])
+              }
+        Else {
+        }
+        
+        }
+            }
+        }
+        Else {
+    }   
 
 # Monthly channel
 # ---------------
@@ -242,166 +404,11 @@ Else {
     Else {
     }
 
-
-# Semi-Annual channel (targeted) (SACT)
-# -------------------------------------
-
-# Check if channel is set for checking, if so, do stuff
-If ($AzAutomationURISactVariable) {
-$sactURI = Get-AutomationVariable -Name $AzAutomationURISactVariable
-
-#Get data
-$sactweb = Invoke-RestMethod -Uri $SACT
-
-# Find article's last updated time
-$sactdatepattern = '\d{4}-\d{2}-\d{2} \d{2}:\d{2} [AP]M'
-$sactLastUpdated = $sactweb | select-string  -Pattern $sactdatepattern -AllMatches | % { $_.Matches } | % { $_.Value }
-
-# Convert match into Date/Time
-$sactDate = Get-Date $sactLastUpdated
-
-# Check if updates are newer than time variable, if so, do stuff
-                             
-	# Calculate time difference
-	If (([datetime]$Now - [datetime]$sactDate).TotalHours -le $Hours) {
-
-    # Picking out title
-    $sacttitlepattern = '(?<=\<h2 id="v.*?\>)(.*?)(?=<\/h2\>)'
-    $sacttitle = $sactweb | select-string  -Pattern $sacttitlepattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
-
-    # Tailor the "More info" button by adding suffix to link to right section of the webpage
-    $sactlinkpattern = '(?<=\<h2.*?\")(.*?)(?=\"\>)'
-    $sactlink = $sactweb | Select-String -Pattern $sactlinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
-
-    # Select latest updates
-    $sactcontentpattern = '(\<h2 id="v.+?\>)(.|\n)*?(?=(\<h2 id="v.+?\>|<div class.+?\>))'
-    $sactupdate = $sactweb | select-string  -Pattern $sactcontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
-    $sactcontent = $sactupdate | ConvertTo-Json
-
-#Generate payload
-          
-$sactPayload =  @"
-{
-    "@context": "https://schema.org/extensions",
-    "@type": "MessageCard",
-    "potentialAction": [
-            {
-            "@type": "OpenUri",
-            "name": "More info",
-            "targets": [
-                {
-                    "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel-targeted-$($Year)#$($sactlink)"
-                }
-            ]
-        },
-     ],
-    "sections": [
-        {
-            "facts": [
-                {
-                    "name": "Version updated:",
-                    "value": "$($sactDate)"
-                }
-                
-            ],
-            "text": $sactcontent
-        }
-    ],
-    "summary": "O365 ProPlus Semi-Annual (targeted)",
-    "themeColor": "$($color)",
-    "title": "Semi-Annual Channel (targeted) release: $($sacttitle)"
-}
-"@
-
-# If any new posts, add to Teams. If new content matches content of previous payload, do not post
-
-$sactPayloadAZ = Get-AutomationVariable $AzAutomationPayloadSACTVariable
-
-# First check if Payload is over 18K (Microsoft Teams limit)
-
-if ($sactPayload.Length -gt $MaxPayloadSize) {  
-
-    # Find payload + append text total length
-    $sactTotalLength = $sactPayload.Length + $TrunkAppend.Length
-
-    # Find the overshooting value
-    $sactPayloadOverSize = ($MaxPayloadSize - $sactTotalLength)
-
-    # At what point in the original Payload content do we have to split the JSON
-    $sactPayloadSplitValue = $sactContent.Length - (-$sactPayloadOverSize)
-
-    # Split the JSON into a new Payload
-    $sactNewSplitContent = $sactupdate.Substring(0,$sactPayloadSplitValue)
-    
-    # Create new truncated payload
-    $sactNewContent = $sactNewSplitContent + $TrunkAppend 
-    $sactNewPayloadContent = ConvertTo-Json $sactNewContent
-    
-#Generate truncated payload
-          
-$sactNewPayload =  @"
-{
-    "@context": "https://schema.org/extensions",
-    "@type": "MessageCard",
-    "potentialAction": [
-            {
-            "@type": "OpenUri",
-            "name": "More info",
-            "targets": [
-                {
-                    "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel-targeted-$($Year)#$($saclink)"
-                }
-            ]
-        },
-     ],
-    "sections": [
-        {
-            "facts": [
-                {
-                    "name": "Version updated:",
-                    "value": "$($sactDate)"
-                }
-                
-            ],
-            "text": $sactNewPayloadContent
-        }
-    ],
-    "summary": "O365 ProPlus Semi-Annual (targeted)",
-    "themeColor": "$($color)",
-    "title": "Semi-Annual Channel (targeted) release: $($sacttitle)"
-}
-"@
-
-If ($sactcontent -ne $sactPayloadAZ) {
-Invoke-RestMethod -uri $sactURI -Method Post -body $sactNewPayload -ContentType 'application/json; charset=utf-8'
-Set-AutomationVariable -Name $AzAutomationPayloadsactVariable -Value ($sactcontent -as [string])
-      }
-    Else {
-    }
-    
-    }
-Else {
-    If ($sactcontent -ne $sactPayloadAZ) {
-    Invoke-RestMethod -uri $sactURI -Method Post -body $sactPayload -ContentType 'application/json; charset=utf-8'
-    Set-AutomationVariable -Name $AzAutomationPayloadsactVariable -Value ($sactcontent -as [string])
-          }
-    Else {
-    }
-    
-    }
-        }
-    }
-    Else {
-    }
-
-
 # Semi-Annual channel (SAC)
 # -------------------------
 
 # Check if channel is set for checking, if so, do stuff
-If ($AzAutomationURISactVariable) {
+If ($AzAutomationURISacVariable) {
 $sacURI = Get-AutomationVariable -Name $AzAutomationURISacVariable
 
 #Get data
@@ -548,3 +555,155 @@ Else {
     }
     Else {
     }
+
+# Semi-Annual channel preview (SACP)
+# ----------------------------------
+
+# Check if channel is set for checking, if so, do stuff
+If ($AzAutomationURISacpVariable) {
+    $sacpURI = Get-AutomationVariable -Name $AzAutomationURISacpVariable
+    
+    #Get data
+    $SACPweb = Invoke-RestMethod -Uri $SACP
+    
+    # Find article's last updated time
+    $sacpdatepattern = '\d{4}-\d{2}-\d{2} \d{2}:\d{2} [AP]M'
+    $sacpLastUpdated = $SACPweb | select-string  -Pattern $sacpdatepattern -AllMatches | % { $_.Matches } | % { $_.Value }
+    
+    # Convert match into Date/Time
+    $SACPDate = Get-Date $sacpLastUpdated
+    
+    # Check if updates are newer than time variable, if so, do stuff
+                                 
+        # Calculate time difference
+        If (([datetime]$Now - [datetime]$SACPDate).TotalHours -le $Hours) {
+    
+        # Picking out title
+        $sacptitlepattern = '(?<=\<h2 id="v.*?\>)(.*?)(?=<\/h2\>)'
+        $sacptitle = $SACPweb | select-string  -Pattern $sacptitlepattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+    
+        # Tailor the "More info" button by adding suffix to link to right section of the webpage
+        $sacplinkpattern = '(?<=\<h2.*?\")(.*?)(?=\"\>)'
+        $sacplink = $SACPweb | Select-String -Pattern $sacplinkpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+    
+        # Select latest updates
+        $sacpcontentpattern = '(\<h2 id="v.+?\>)(.|\n)*?(?=(\<h2 id="v.+?\>|<div class.+?\>))'
+        $sacpupdate = $SACPweb | select-string  -Pattern $sacpcontentpattern -AllMatches | % { $_.Matches } | % { $_.Value } | Select-Object -First 1
+        $sacpcontent = $sacpupdate | ConvertTo-Json
+    #Generate payload
+              
+    $SACPPayload =  @"
+    {
+        "@context": "https://schema.org/extensions",
+        "@type": "MessageCard",
+        "potentialAction": [
+                {
+                "@type": "OpenUri",
+                "name": "More info",
+                "targets": [
+                    {
+                        "os": "default",
+                        "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-enterprise-channel-preview#$($sacplink)"
+                    }
+                ]
+            },
+         ],
+        "sections": [
+            {
+                "facts": [
+                    {
+                        "name": "Version updated:",
+                        "value": "$($sacpDate)"
+                    }
+                    
+                ],
+                "text": $sacpcontent
+            }
+        ],
+        "summary": "O365 ProPlus Semi-Annual Preview",
+        "themeColor": "$($color)",
+        "title": "Semi-Annual Channel Preview release: $($sacptitle)"
+    }
+"@
+    
+    # If any new posts, add to Teams. If new content matches content of previous payload, do not post
+    
+    $SACPPayloadAZ = Get-AutomationVariable -Name $AzAutomationPayloadSACPVariable
+    
+    # First check if Payload is over 18K (Microsoft Teams limit)
+    
+    if ($sacpPayload.Length -gt $MaxPayloadSize) {  
+    
+        # Find payload + append text total length
+        $sacpTotalLength = $sacpPayload.Length + $TrunkAppend.Length
+    
+        # Find the overshooting value
+        $sacpPayloadOverSize = ($MaxPayloadSize - $sacpTotalLength)
+    
+        # At what point in the original Payload content do we have to split the JSON
+        $sacpPayloadSplitValue = $sacpContent.Length - (-$sacpPayloadOverSize)
+    
+        # Split the JSON into a new Payload
+        $sacpNewSplitContent = $sacpupdate.Substring(0,$sacpPayloadSplitValue)
+        
+        # Create new truncated payload
+        $sacpNewContent = $sacpNewSplitContent + $TrunkAppend 
+        $sacpNewPayloadContent = ConvertTo-Json $sacpNewContent
+        
+    #Generate truncated payload
+              
+    $sacpNewPayload =  @"
+    {
+        "@context": "https://schema.org/extensions",
+        "@type": "MessageCard",
+        "potentialAction": [
+                {
+                "@type": "OpenUri",
+                "name": "More info",
+                "targets": [
+                    {
+                        "os": "default",
+                        "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-enterprise-channel-preview#$($saclink)"
+                    }
+                ]
+            },
+         ],
+        "sections": [
+            {
+                "facts": [
+                    {
+                        "name": "Version updated:",
+                        "value": "$($sacpDate)"
+                    }
+                    
+                ],
+                "text": $sacpNewPayloadContent
+            }
+        ],
+        "summary": "O365 ProPlus Semi-Annual Preview",
+        "themeColor": "$($color)",
+        "title": "Semi-Annual Channel Preview release: $($sacptitle)"
+    }
+"@
+    
+    If ($sacpcontent -ne $sacpPayloadAZ) {
+    Invoke-RestMethod -uri $sacpURI -Method Post -body $sacpNewPayload -ContentType 'application/json; charset=utf-8'
+    Set-AutomationVariable -Name $AzAutomationPayloadsacpVariable -Value ($sacpcontent -as [string])
+          }
+        Else {
+        }
+        
+        }
+    Else {
+        If ($sacpcontent -ne $sacpPayloadAZ) {
+        Invoke-RestMethod -uri $sacpURI -Method Post -body $sacpPayload -ContentType 'application/json; charset=utf-8'
+        Set-AutomationVariable -Name $AzAutomationPayloadsacpVariable -Value ($sacpcontent -as [string])
+              }
+        Else {
+        }
+        
+        }
+            }
+        }
+        Else {
+        }
