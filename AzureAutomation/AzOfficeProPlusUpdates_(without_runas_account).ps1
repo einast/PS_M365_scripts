@@ -56,7 +56,7 @@
 
 # User defined variables
 # ----------------------
-# If you want to check Monthly Channel, Semi-Annual Channel Targeted (SACT) and/or Semi-Annual Channel, add your Teams URI in the variables fields. 
+# If you want to check Current Channel, Monthly Channel, Semi-Annual Channel (SAC) and/or Semi-Annual Channel Preview, add your Teams URI in the variables fields. 
 # Comment out the ones you don't want to check.
 
 # Current channel 
@@ -300,7 +300,7 @@ $MonthlyPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-channel-$($Year)#$($monthlylink)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-channel#$($monthlylink)"
                 }
             ]
         },
@@ -359,7 +359,7 @@ $MonthlyNewPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-channel-$($Year)#$($saclink)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/monthly-channel#$($monthlylink)"
                 }
             ]
         },
@@ -451,7 +451,7 @@ $SACPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel-$($Year)#$($saclink)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel#$($saclink)"
                 }
             ]
         },
@@ -511,7 +511,7 @@ $sacNewPayload =  @"
             "targets": [
                 {
                     "os": "default",
-                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel-$($Year)#$($saclink)"
+                    "uri": "https://docs.microsoft.com/en-us/officeupdates/semi-annual-channel#$($saclink)"
                 }
             ]
         },
