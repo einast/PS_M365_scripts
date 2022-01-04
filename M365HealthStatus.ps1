@@ -181,10 +181,6 @@ $Payload =  @"
                     "value": "$($inc.Status)"
                 },
                 {
-                    "name": "Feature group:",
-                    "value": "$($inc.featureGroup)"
-                },
-                {
                     "name": "Classification:",
                     "value": "$($inc.classification)"
                 }
