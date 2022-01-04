@@ -27,7 +27,6 @@
 #>
 
 # User defined variables
-# User defined variables
 $ApplicationID = 'application ID'
 $ApplicationKey = 'application key'
 $TenantDomain = 'your FQDN' # Alternatively use DirectoryID if tenant domain fails
