@@ -1,35 +1,32 @@
-<#
+ <#
 .SYNOPSIS
   Get Microsoft 365 Service health status and post to Teams using webhooks
 .DESCRIPTION
   Script to check Microsoft 365 Health status, configured to check last 15 minutes (can be adapted as required). Run as a scheduled task, Azure automation etc.
-
   Create a webhook in Teams and copy the URI to the variable section below.
-
   The output will be color coded (can be adapted as required) according to Classification of the entry:
   
   Red = Incident
   Yellow = Advisory
   Green = Resolved (Messages with a value in "End date")
-
   Replace the variables with your own where feasible
   
   Example doc for registering Azure application for credentials and permissions:
   https://evotec.xyz/preparing-azure-app-registrations-permissions-for-office-365-health-service/
-
   Disclaimer: This script is offered "as-is" with no warranty. 
   While the script is tested and working in my environment, it is recommended that you test the script
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        2.3
+  Version:        2.4
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  March 16th 2021
-  Purpose/Change: Added more services
+  Creation Date:  January 4th 2022
+  Purpose/Change: Fixed failing API by replacing with Graph API
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
 
+# User defined variables
 # User defined variables
 $ApplicationID = 'application ID'
 $ApplicationKey = 'application key'
@@ -72,60 +69,60 @@ $Microsoft365Suite = ''
 $Incident = 'yes'
 $Advisory = ''
 
-# Build the Services array            
-$ServicesArray = @()            
-            
-# If Services variables are present, add with 'eq' comparison            
-if($ExchangeOnline){$ServicesArray += '$_.WorkloadDisplayName -eq "Exchange Online"'}            
-if($MicrosoftForms){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Forms"'}
-if($MicrosoftIntune){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Intune"'}
-if($MicrosoftKaizala){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Kaizala"'} 
-if($SkypeforBusiness){$ServicesArray += '$_.WorkloadDisplayName -eq "Skype for Business"'}
-if($MicrosoftDefenderATP){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Defender ATP"'}
-if($MicrosoftFlow){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Flow"'}
-if($FlowinMicrosoft365){$ServicesArray += '$_.WorkloadDisplayName -eq "Flow in Microsoft 365"'}
-if($MicrosoftTeams){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft Teams"'}
-if($MobileDeviceManagementforOffice365){$ServicesArray += '$_.WorkloadDisplayName -eq "Mobile Device Management for Office 365"'}
-if($OfficeClientApplications){$ServicesArray += '$_.WorkloadDisplayName -eq "Office Client Applications"'}
-if($Officefortheweb){$ServicesArray += '$_.WorkloadDisplayName -eq "Office for the web"'}
-if($OneDriveforBusiness){$ServicesArray += '$_.WorkloadDisplayName -eq "OneDrive for Business"'}
-if($IdentityService){$ServicesArray += '$_.WorkloadDisplayName -eq "Identity Service"'}
-if($Office365Portal){$ServicesArray += '$_.WorkloadDisplayName -eq "Office 365 Portal"'}
-if($OfficeSubscription){$ServicesArray += '$_.WorkloadDisplayName -eq "Office Subscription"'}
-if($Planner){$ServicesArray += '$_.WorkloadDisplayName -eq "Planner"'}
-if($PowerApps){$ServicesArray += '$_.WorkloadDisplayName -eq "PowerApps"'}
-if($PowerAppsinMicrosoft365){$ServicesArray += '$_.WorkloadDisplayName -eq "PowerApps in Microsoft 365"'}
-if($PowerBI){$ServicesArray += '$_.WorkloadDisplayName -eq "Power BI"'}
-if($AzureInformationProtection){$ServicesArray += '$_.WorkloadDisplayName -eq "Azure Information Protection"'}
-if($SharepointOnline){$ServicesArray += '$_.WorkloadDisplayName -eq "Sharepoint Online"'}
-if($MicrosoftStaffHub){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft StaffHub"'}
-if($YammerEnterprise){$ServicesArray += '$_.WorkloadDisplayName -eq "Yammer Enterprise"'}
-if($Microsoft365Suite){$ServicesArray += '$_.WorkloadDisplayName -eq "Microsoft 365 Suite"'}
+# Build the Services array            
+$ServicesArray = @()            
+            
+# If Services variables are present, add with 'eq' comparison            
+if($ExchangeOnline){$ServicesArray += '$_.service -eq "Exchange Online"'}            
+if($MicrosoftForms){$ServicesArray += '$_.service -eq "Microsoft Forms"'}
+if($MicrosoftIntune){$ServicesArray += '$_.service -eq "Microsoft Intune"'}
+if($MicrosoftKaizala){$ServicesArray += '$_.service -eq "Microsoft Kaizala"'} 
+if($SkypeforBusiness){$ServicesArray += '$_.service -eq "Skype for Business"'}
+if($MicrosoftDefenderATP){$ServicesArray += '$_.service -eq "Microsoft Defender ATP"'}
+if($MicrosoftFlow){$ServicesArray += '$_.service -eq "Microsoft Flow"'}
+if($FlowinMicrosoft365){$ServicesArray += '$_.service -eq "Flow in Microsoft 365"'}
+if($MicrosoftTeams){$ServicesArray += '$_.service -eq "Microsoft Teams"'}
+if($MobileDeviceManagementforOffice365){$ServicesArray += '$_.service -eq "Mobile Device Management for Office 365"'}
+if($OfficeClientApplications){$ServicesArray += '$_.service -eq "Office Client Applications"'}
+if($Officefortheweb){$ServicesArray += '$_.service -eq "Office for the web"'}
+if($OneDriveforBusiness){$ServicesArray += '$_.service -eq "OneDrive for Business"'}
+if($IdentityService){$ServicesArray += '$_.service -eq "Identity Service"'}
+if($Office365Portal){$ServicesArray += '$_.service -eq "Office 365 Portal"'}
+if($OfficeSubscription){$ServicesArray += '$_.service -eq "Office Subscription"'}
+if($Planner){$ServicesArray += '$_.service -eq "Planner"'}
+if($PowerApps){$ServicesArray += '$_.service -eq "PowerApps"'}
+if($PowerAppsinMicrosoft365){$ServicesArray += '$_.service -eq "PowerApps in Microsoft 365"'}
+if($PowerBI){$ServicesArray += '$_.service -eq "Power BI"'}
+if($AzureInformationProtection){$ServicesArray += '$_.service -eq "Azure Information Protection"'}
+if($SharepointOnline){$ServicesArray += '$_.service -eq "Sharepoint Online"'}
+if($MicrosoftStaffHub){$ServicesArray += '$_.service -eq "Microsoft StaffHub"'}
+if($YammerEnterprise){$ServicesArray += '$_.service -eq "Yammer Enterprise"'}
+if($Microsoft365Suite){$ServicesArray += '$_.service -eq "Microsoft 365 Suite"'}
 
-# Build the Services where array into a string and joining each statement with -or     
+# Build the Services where array into a string and joining each statement with -or     
 $ServicesString = $ServicesArray -Join " -or "
 
-# Build the Classification array            
-$ClassificationArray = @()            
-            
-# If Classification variables are present, add with 'eq' comparison            
-if($Incident){$ClassificationArray += '$_.Classification -eq "Incident"'}            
-if($Advisory){$ClassificationArray += '$_.Classification -eq "Advisory"'}            
+# Build the Classification array            
+$ClassificationArray = @()            
+            
+# If Classification variables are present, add with 'eq' comparison            
+if($Incident){$ClassificationArray += '$_.Classification -eq "incident"'}            
+if($Advisory){$ClassificationArray += '$_.Classification -eq "advisory"'}            
 
-# Build the Classification where array into a string and joining each statement with -or            
+# Build the Classification where array into a string and joining each statement with -or            
 $ClassificationString = $ClassificationArray -Join " -or "
 
 # Request data
 $body = @{
     grant_type="client_credentials";
-    resource="https://manage.office.com";
+    resource="https://graph.microsoft.com";
     client_id=$ApplicationID;
     client_secret=$ApplicationKey;
     earliest_time="-$($Minutes)m@s"}
 
 $oauth = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$($tenantdomain)/oauth2/token?api-version=1.0" -Body $body
 $headerParams = @{'Authorization'="$($oauth.token_type) $($oauth.access_token)"}
-$messages = (Invoke-RestMethod -Uri "https://manage.office.com/api/v1.0/$($tenantdomain)/ServiceComms/Messages" -Headers $headerParams -Method Get)
+$messages = (Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/issues" -Headers $headerParams -Method Get)
 $incidents = $messages.Value | Where-Object ([scriptblock]::Create($ClassificationString)) | Where-Object ([scriptblock]::Create($ServicesString))
 
 $Now = Get-Date
@@ -134,10 +131,10 @@ $Now = Get-Date
 ForEach ($inc in $incidents){
                 
                 # Add updates posted last $Minutes
-                If (($Now - [datetime]$inc.LastUpdatedTime).TotalMinutes -le $Minutes) {
+                If (($Now - [datetime]$inc.lastModifiedDateTime).TotalMinutes -le $Minutes) {
                 
                 # Set the color line of the card according to the Classification of the event, or if it has ended
-                if ($inc.Classification -eq "Incident" -and $inc.EndTime -eq $null)
+                if ($inc.Classification -eq "incident" -and $inc.EndTime -eq $null)
                 {
                 $color = "ff0000" # Red
                 }
@@ -153,8 +150,8 @@ ForEach ($inc in $incidents){
                             }
                         }
 
-# Pick latest message in the message index and convert the text to JSON before generating payload (if not it will fail).
-$Message = $inc.Messages.MessageText[$inc.Messages.Count-1] | ConvertTo-Json
+# Pick message in the message index and convert the text to JSON before generating payload (if not it will fail).
+$Message = $inc.impactDescription | ConvertTo-Json
   
 # Generate payload(s)
 $Payload =  @"
@@ -178,19 +175,19 @@ $Payload =  @"
             "facts": [
                 {
                     "name": "Service:",
-                    "value": "$($inc.WorkloadDisplayName)"
+                    "value": "$($inc.service)"
                 },
                 {
                     "name": "Status:",
                     "value": "$($inc.Status)"
                 },
                 {
-                    "name": "Severity:",
-                    "value": "$($inc.Severity)"
+                    "name": "Feature group:",
+                    "value": "$($inc.featureGroup)"
                 },
                 {
                     "name": "Classification:",
-                    "value": "$($inc.Classification)"
+                    "value": "$($inc.classification)"
                 }
             ],
             "text": $($Message)
