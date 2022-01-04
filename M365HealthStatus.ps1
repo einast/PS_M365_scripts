@@ -150,8 +150,8 @@ ForEach ($inc in $incidents){
                         }
 
 # Pick message in the message index and convert the text to JSON before generating payload (if not it will fail).
-$Message = $inc.impactDescription | ConvertTo-Json
-  
+$Message = $incidents.posts.description.content[$inc.Messages.Count-1] | ConvertTo-Json 
+
 # Generate payload(s)
 $Payload =  @"
 {
