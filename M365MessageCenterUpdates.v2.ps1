@@ -28,7 +28,7 @@ $ApplicationKey = 'application key'
 $TenantDomain = 'your FQDN' # Alternatively use DirectoryID if tenant domain fails
 $URI = 'Teams webhook URI'
 $Now = Get-Date
-$Hours = '200'    
+$Hours = '24'    
 $color = '0377fc'
 
 # Request data
