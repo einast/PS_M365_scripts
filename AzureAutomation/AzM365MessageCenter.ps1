@@ -23,8 +23,8 @@
 .NOTES
   Version:        1.0
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  Nov 18th 2019
-  Purpose/Change: Rewrote script for Azure Automation
+  Creation Date:  Jan 6th 2022
+  Purpose/Change: Replaced API with Graph API
 .LINK
   https://github.com/einast/PS_M365_scripts/AzureAutomation
 #>
@@ -52,24 +52,24 @@ $URI = Get-AutomationVariable -Name $AzVariableTeamsURIName
 # Request data
     $body = @{
         grant_type="client_credentials";
-        resource="https://manage.office.com";
+        resource="https://graph.microsoft.com";
         client_id=$ApplicationID;
         client_secret=$ApplicationKey;
         earliest_time="-$($Hours)h@s"}
 
     $oauth = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$($Tenantdomain)/oauth2/token?api-version=1.0" -Body $body
     $headerParams = @{'Authorization'="$($oauth.token_type) $($oauth.access_token)"}
-    $messages = (Invoke-RestMethod -Uri "https://manage.office.com/api/v1.0/$($Tenantdomain)/ServiceComms/Messages" -Headers $headerParams -Method Get)
-    $incidents = $messages.Value | Where-Object {$_.MessageType -eq 'MessageCenter'}    
+    $messages = (Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages" -Headers $headerParams -Method Get)
+    $incidents = $messages.Value #| Where-Object {$_.MessageType -eq 'MessageCenter'}    
 
 # Parse data
 ForEach ($inc in $incidents){
                              
 	# Add updates posted last $Hours
-	If (($Now - [datetime]$inc.LastUpdatedTime).TotalHours -le $Hours) {
+	If (($Now - [datetime]$inc.lastModifiedDateTime).TotalHours -le $Hours) {
 
 	# Clean up output (replace brackets with HTML), convert MessageText to JSON beforehand, if not the payload will fail.
-	$Message = $inc.Messages.MessageText -replace [regex]::Escape("["), "<br><b>" -replace [regex]::Escape("]"), "</b><br><br>"
+	$Message = $inc.body.content -replace [regex]::Escape("["), "<br><b>" -replace [regex]::Escape("]"), "</b><br><br>"
     $Message = ConvertTo-Json $Message
 
 # Generate payload(s)
@@ -114,15 +114,15 @@ $Payload =  @"
             "facts": [
                 {
                     "name": "Service:",
-                    "value": "$($inc.AffectedWorkloadDisplayNames)"
+                    "value": "$($inc.services)"
                 },
                 {
-                    "name": "Action Type:",
-                    "value": "$($inc.ActionType)"
+                    "name": "Category:",
+                    "value": "$($inc.category)"
                 },
                 {
-                    "name": "Classification:",
-                    "value": "$($inc.Classification)"
+                    "name": "Severity:",
+                    "value": "$($inc.severity)"
                 }
             ],
             "text": $($Message)

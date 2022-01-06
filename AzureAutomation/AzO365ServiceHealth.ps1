@@ -25,10 +25,10 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        2.5
+  Version:        2.6
   Author:         Einar Asting (einar@thingsinthe.cloud)
-  Creation Date:  March 16th 2021
-  Purpose/Change: Added more services
+  Creation Date:  January 6th 2022
+  Purpose/Change: Updated script to use Graph API
 .LINK
   https://github.com/einast/PS_M365_scripts/blob/master/AzureAutomation/AzO365ServiceHealth.ps1
 #>
@@ -135,14 +135,14 @@ $ClassificationString = $ClassificationArray -Join " -or "
 # Request data
 $body = @{
     grant_type="client_credentials";
-    resource="https://manage.office.com";
+    resource="https://graph.microsoft.com";
     client_id=$ApplicationID;
     client_secret=$ApplicationKey;
     earliest_time="-$($Minutes)m@s"}
 
 $oauth = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$($tenantdomain)/oauth2/token?api-version=1.0" -Body $body
 $headerParams = @{'Authorization'="$($oauth.token_type) $($oauth.access_token)"}
-$messages = (Invoke-RestMethod -Uri "https://manage.office.com/api/v1.0/$($tenantdomain)/ServiceComms/Messages" -Headers $headerParams -Method Get)
+$messages = (Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/issues" -Headers $headerParams -Method Get)
 $incidents = $messages.Value | Where-Object ([scriptblock]::Create($ClassificationString)) | Where-Object ([scriptblock]::Create($ServicesString))
 
 $Now = Get-Date
@@ -168,10 +168,11 @@ ForEach ($inc in $incidents){
                         }
                              
 # Add updates posted last $Minutes
-If (($Now - [datetime]$inc.LastUpdatedTime).TotalMinutes -le $Minutes) {
+If (($Now - [datetime]$inc.lastModifiedDateTime).TotalMinutes -le $Minutes) {
 
 # Pick latest message in the message index and convert the text to JSON before generating payload (if not it will fail).
-$Message = $inc.Messages.MessageText[$inc.Messages.Count-1] | ConvertTo-Json
+$Message = $incidents.posts.description.content[$inc.Messages.Count-1] | ConvertTo-Json
+
   
 # Generate payload(s)
 $Payload =  @"
@@ -195,19 +196,15 @@ $Payload =  @"
             "facts": [
                 {
                     "name": "Service:",
-                    "value": "$($inc.WorkloadDisplayName)"
+                    "value": "$($inc.service)"
                 },
                 {
                     "name": "Status:",
                     "value": "$($inc.Status)"
                 },
                 {
-                    "name": "Severity:",
-                    "value": "$($inc.Severity)"
-                },
-                {
                     "name": "Classification:",
-                    "value": "$($inc.Classification)"
+                    "value": "$($inc.classification)"
                 }
             ],
             "text": $($Message)
@@ -227,7 +224,7 @@ if($Pushover){
 $POparameters = @{
   token = $PushoverToken
   user = $PushoverUser
-  message = "$($Inc.Id) - $($Inc.Title) `n`n$($inc.Messages.MessageText[$inc.Messages.Count-1])"
+  message = "$($Inc.Id) - $($Inc.Title) `n`n$($incidents.posts.description.content[$inc.Messages.Count-1])"
 }
 $POparameters | Invoke-RestMethod -Uri $PushoverUri -Method Post
 }
