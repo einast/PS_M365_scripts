@@ -1,4 +1,4 @@
-<#
+ <#
 .SYNOPSIS
   Get Microsoft 365 Message Center updates and post to Teams using webhooks
 .DESCRIPTION
@@ -14,44 +14,44 @@
   in a test environment before using in your production environment.
  
 .NOTES
-  Version:        2.0
+  Version:        2.1
   Author:         Einar Asting (einar@asting.net)
-  Creation Date:  Oct 17h 2019
-  Purpose/Change: Updated card with buttons etc
+  Creation Date:  Jan 6th 2022
+  Purpose/Change: Updated to Graph API
 .LINK
   https://github.com/einast/PS_M365_scripts
 #>
 
 # User defined variables
-$ApplicationID = 'App ID'
-$ApplicationKey = 'App key'
-$TenantDomain = 'tenant domain' # Alternatively use DirectoryID if tenant domain fails
+$ApplicationID = 'application ID'
+$ApplicationKey = 'application key'
+$TenantDomain = 'your FQDN' # Alternatively use DirectoryID if tenant domain fails
 $URI = 'Teams webhook URI'
 $Now = Get-Date
-$Hours = '24'    
+$Hours = '200'    
 $color = '0377fc'
 
 # Request data
     $body = @{
         grant_type="client_credentials";
-        resource="https://manage.office.com";
+        resource="https://graph.microsoft.com";
         client_id=$ApplicationID;
         client_secret=$ApplicationKey;
         earliest_time="-$($Hours)h@s"}
 
     $oauth = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$($tenantdomain)/oauth2/token?api-version=1.0" -Body $body
     $headerParams = @{'Authorization'="$($oauth.token_type) $($oauth.access_token)"}
-    $messages = (Invoke-RestMethod -Uri "https://manage.office.com/api/v1.0/$($tenantdomain)/ServiceComms/Messages" -Headers $headerParams -Method Get)
-    $incidents = $messages.Value | Where-Object {$_.MessageType -eq 'MessageCenter'}
+    $messages = (Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/messages" -Headers $headerParams -Method Get)
+    $incidents = $messages.Value #| Where-Object {$_.MessageType -eq 'MessageCenter'}
 
 # Parse data
 ForEach ($inc in $incidents){
                              
 	# Add updates posted last 24 hours
-	If (($Now - [datetime]$inc.LastUpdatedTime).TotalHours -le $Hours) {
+	If (($Now - [datetime]$inc.lastModifiedDateTime).TotalHours -le $Hours) {
 
 	# Clean up output (replace brackets with HTML), convert MessageText to JSON beforehand, if not the payload will fail.
-    	$Message = $inc.Messages.MessageText -replace [regex]::Escape("["), "<br><b>" -replace [regex]::Escape("]"), "</b><br><br>" 
+    	$Message = $inc.body.content -replace [regex]::Escape("["), "<br><b>" -replace [regex]::Escape("]"), "</b><br><br>" 
     	$Message = ConvertTo-Json $Message
 
 # Generate payload(s)
@@ -96,15 +96,15 @@ $Payload =  @"
             "facts": [
                 {
                     "name": "Service:",
-                    "value": "$($inc.AffectedWorkloadDisplayNames)"
+                    "value": "$($inc.services)"
                 },
                 {
-                    "name": "Action Type:",
-                    "value": "$($inc.ActionType)"
+                    "name": "Category:",
+                    "value": "$($inc.category)"
                 },
                 {
-                    "name": "Classification:",
-                    "value": "$($inc.Classification)"
+                    "name": "Severity:",
+                    "value": "$($inc.severity)"
                 }
             ],
             "text": $($Message)
