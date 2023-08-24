@@ -47,7 +47,7 @@ $Minutes = '15'
 # Due to limitations and readability, the script will only send the title of the incident/advisory to Pushover. 
 # COMMENT OUT THIS SECTION IF YOU DON'T WANT TO USE PUSHOVER!
 
-$Pushover = 'yes' # Comment out if you don't want to use Pushover. I use 'yes' for readability.
+#$Pushover = 'yes' # Comment out if you don't want to use Pushover. I use 'yes' for readability.
 $PushoverToken = Get-AutomationVariable -Name 'AzO365PushoverToken' # Your API token. Comment out if you don't want to use Pushover
 $PushoverUser = Get-AutomationVariable -Name 'AzO365PushoverUser' # User/Group token. Comment out if you don't want to use Pushover
 $PushoverURI = 'https://api.pushover.net/1/messages.json' # DO NOT CHANGE! Default Pushover URI. Comment out if you don't want to use Pushover
@@ -131,7 +131,7 @@ if($Advisory){$ClassificationArray += '$_.Classification -eq "Advisory"'}
 
 # Build the Classification where array into a string and joining each statement with -or            
 $ClassificationString = $ClassificationArray -Join " -or "
-
+<#
 # Request data
 $body = @{
     grant_type="client_credentials";
@@ -141,7 +141,19 @@ $body = @{
     earliest_time="-$($Minutes)m@s"}
 
 $oauth = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$($tenantdomain)/oauth2/token?api-version=1.0" -Body $body
-$headerParams = @{'Authorization'="$($oauth.token_type) $($oauth.access_token)"}
+#>
+
+# Authentcate with managed identity
+# Obtain AccessToken for Microsoft Graph via the managed identity
+$resourceURL = "https://graph.microsoft.com/" 
+$response = [System.Text.Encoding]::Default.GetString((Invoke-WebRequest -UseBasicParsing -Uri "$($env:IDENTITY_ENDPOINT)?resource=$resourceURL" -Method 'GET' -Headers @{'X-IDENTITY-HEADER' = "$env:IDENTITY_HEADER"; 'Metadata' = 'True'}).RawContentStream.ToArray()) | ConvertFrom-Json 
+$accessToken = $response.access_token 
+
+#$headerParams = @{'Authorization'="$($oauth.token_type) $($oauth.access_token)"}
+$headerParams = @{
+    Authorization="Bearer $accessToken"
+}
+
 $messages = (Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/admin/serviceAnnouncement/issues" -Headers $headerParams -Method Get)
 $incidents = $messages.Value | Where-Object ([scriptblock]::Create($ClassificationString)) | Where-Object ([scriptblock]::Create($ServicesString))
 
